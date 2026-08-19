@@ -48,6 +48,8 @@ const dom = {
     durationDisplay: document.getElementById("durationDisplay"),
     volumeSlider: document.getElementById("volumeSlider"),
     volumeIcon: document.getElementById("volumeIcon"),
+    volumeIconBtn: document.getElementById("volumeIconBtn"),
+    volumePopover: document.getElementById("volumePopover"),
     qualityToggle: document.getElementById("qualityToggle"),
     playerQualityMenu: document.getElementById("playerQualityMenu"),
     qualityLabel: document.getElementById("qualityLabel"),
@@ -93,6 +95,7 @@ const dom = {
     playerBarCoverInner: document.getElementById("playerBarCoverInner"),
     playerBarTitle: document.getElementById("playerBarTitle"),
     playerBarArtist: document.getElementById("playerBarArtist"),
+    playerBarFavBtn: document.getElementById("playerBarFavBtn"),
     // 桌面端 - 搜索
     desktopSearch: document.getElementById("desktopSearch"),
     desktopSearchInput: document.getElementById("desktopSearchInput"),
@@ -110,6 +113,7 @@ const dom = {
     // 桌面端 - 扇形面板
     sidePanelTrigger: document.getElementById("sidePanelTrigger"),
     sidePanel: document.getElementById("sidePanel"),
+    toggleSidePanelBtn: document.getElementById("toggleSidePanelBtn"),
     sidePlaylistTab: document.getElementById("sidePlaylistTab"),
     sideFavoritesTab: document.getElementById("sideFavoritesTab"),
     fanScroll: document.getElementById("fanScroll"),
@@ -1219,7 +1223,10 @@ function applyPersistentSnapshotFromRemote(data) {
         const restored = restoreStateFromSnapshot(restoredSearch);
         if (restored) {
             safeSetLocalStorage(LAST_SEARCH_STATE_STORAGE_KEY, data[LAST_SEARCH_STATE_STORAGE_KEY], { skipRemote: true });
-            restoreSearchResultsList();
+            // 仅恢复状态到输入框，不自动显示搜索下拉
+            if (dom.desktopSearchInput && state.searchKeyword) {
+                dom.desktopSearchInput.value = state.searchKeyword;
+            }
         }
     }
 
@@ -2489,6 +2496,7 @@ function hideSearchResults() {
     }
     if (dom.desktopSearchDropdown) {
         dom.desktopSearchDropdown.classList.remove("is-visible");
+        dom.desktopSearchDropdown.setAttribute("hidden", "");
     }
     if (dom.desktopSearchResultsList) {
         dom.desktopSearchResultsList.innerHTML = "";
@@ -3661,17 +3669,40 @@ function setupInteractions() {
             }
             return;
         }
-        // 点击条目本身直接播放
+        // 点击条目本身仅高亮选中，不自动播放
         event.preventDefault();
-        if (listType === "favorite") {
-            playFavoriteSong(index);
-        } else {
-            playPlaylistSong(index);
+        selectFanItem(item, listType, index);
+    }
+
+    // 单选高亮：点击条目仅标记选中状态，不触发播放
+    function selectFanItem(item, listType, index) {
+        const container = listType === "favorite"
+            ? dom.fanFavoriteItems
+            : dom.fanPlaylistItems;
+        if (!container) {
+            return;
         }
+        container.querySelectorAll(".fan-item").forEach((el) => {
+            el.classList.remove("is-selected");
+        });
+        item.classList.add("is-selected");
     }
 
     function initializeSidePanelHandlers() {
-        // 桌面端 hover 触发面板
+        // 桌面端：点击右上角按钮切换面板
+        if (!isMobileView && dom.toggleSidePanelBtn) {
+            dom.toggleSidePanelBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (document.body.classList.contains("side-panel-open")) {
+                    closeSidePanel(true);
+                } else {
+                    openSidePanel(true);
+                }
+            });
+        }
+        
+        // 桌面端 hover 触发面板（辅助功能）
         if (!isMobileView && dom.sidePanelTrigger) {
             dom.sidePanelTrigger.addEventListener("mouseenter", () => openSidePanel(false));
             dom.sidePanelTrigger.addEventListener("mouseleave", () => closeSidePanel(false));
@@ -3721,19 +3752,27 @@ function setupInteractions() {
                 }
             });
             dom.desktopSearchInput.addEventListener("focus", () => {
-                // 如果没有关键词，尝试恢复上次搜索状态
-                const hasKeyword = typeof state.searchKeyword === "string" && state.searchKeyword.length > 0;
-                const hasResults = Array.isArray(state.searchResults) && state.searchResults.length > 0;
-                if (!hasKeyword || !hasResults) {
-                    restoreStateFromSnapshot(lastSearchStateCache);
+                // 聚焦时自动展开搜索栏
+                if (dom.desktopSearch && !dom.desktopSearch.classList.contains("is-expanded")) {
+                    dom.desktopSearch.classList.add("is-expanded");
                 }
-                if (state.searchKeyword && !dom.desktopSearchInput.value.trim()) {
-                    dom.desktopSearchInput.value = state.searchKeyword;
-                }
-                if (state.searchKeyword && state.searchResults.length > 0 && dom.desktopSearchDropdown) {
+                // 仅当输入框已有内容时才显示搜索结果下拉
+                const currentInput = dom.desktopSearchInput.value.trim();
+                if (currentInput && state.searchKeyword && state.searchResults.length > 0 && dom.desktopSearchDropdown) {
+                    dom.desktopSearchDropdown.removeAttribute("hidden");
                     dom.desktopSearchDropdown.classList.add("is-visible");
                     restoreSearchResultsList();
                 }
+            });
+            // 失焦时，如果没有搜索结果和关键词，自动收起搜索栏
+            dom.desktopSearchInput.addEventListener("blur", () => {
+                setTimeout(() => {
+                    const hasResults = state.searchResults && state.searchResults.length > 0;
+                    const hasKeyword = dom.desktopSearchInput.value.trim().length > 0;
+                    if (dom.desktopSearch && !hasResults && !hasKeyword) {
+                        dom.desktopSearch.classList.remove("is-expanded");
+                    }
+                }, 200);
             });
         }
         if (dom.desktopSearchToggle) {
@@ -3741,7 +3780,14 @@ function setupInteractions() {
                 e.preventDefault();
                 e.stopPropagation();
                 if (dom.desktopSearch) {
+                    const willExpand = !dom.desktopSearch.classList.contains("is-expanded");
                     dom.desktopSearch.classList.toggle("is-expanded");
+                    if (willExpand && dom.desktopSearchInput) {
+                        setTimeout(() => dom.desktopSearchInput.focus(), 300);
+                    } else if (!willExpand) {
+                        // 收起时清空搜索结果
+                        hideSearchResults();
+                    }
                 }
             });
         }
@@ -3774,6 +3820,17 @@ function setupInteractions() {
                 loadMoreResults();
             });
         }
+        // 懒加载：搜索结果列表滚动到底部时自动加载更多
+        const lazyLoadContainers = [dom.desktopSearchResultsList, dom.mobileSearchResultsList, dom.searchResults].filter(Boolean);
+        lazyLoadContainers.forEach((container) => {
+            container.addEventListener("scroll", () => {
+                if (isLoadingMore || !state.hasMoreResults) return;
+                const { scrollTop, scrollHeight, clientHeight } = container;
+                if (scrollHeight - scrollTop - clientHeight < 80) {
+                    loadMoreResults();
+                }
+            }, { passive: true });
+        });
         // 移动端搜索遮罩打开
         if (dom.mobileSearchToggle) {
             dom.mobileSearchToggle.addEventListener("click", (e) => {
@@ -3821,56 +3878,17 @@ function setupInteractions() {
                 dom.desktopSearchDropdown && dom.desktopSearchDropdown.classList.contains("is-visible") &&
                 !dom.desktopSearchDropdown.contains(e.target)) {
                 dom.desktopSearchDropdown.classList.remove("is-visible");
+                dom.desktopSearchDropdown.setAttribute("hidden", "");
             }
         });
     }
 
+    // 扇形 3D 变换已弃用，改为普通列表
     function applyFanScrollTransforms(scrollEl) {
-        if (!scrollEl) {
-            return;
-        }
-        const items = scrollEl.querySelectorAll(".fan-item");
-        if (items.length === 0) {
-            return;
-        }
-        const scrollTop = scrollEl.scrollTop;
-        const viewportH = scrollEl.clientHeight;
-        const center = scrollTop + viewportH / 2;
-        items.forEach((item) => {
-            const rect = item.getBoundingClientRect();
-            const containerRect = scrollEl.getBoundingClientRect();
-            const itemCenter = rect.top + rect.height / 2 - containerRect.top + scrollTop;
-            const delta = itemCenter - center;
-            const maxDelta = viewportH / 2;
-            const ratio = Math.max(-1, Math.min(1, delta / Math.max(1, maxDelta)));
-            const absRatio = Math.abs(ratio);
-            // 距离中心越远，旋转越大，并带有缩放和位移，形成半圆扇形
-            const rotateY = ratio * 14; // ±14°
-            const translateZ = -absRatio * 60; // 最远后退 60px
-            const translateX = Math.abs(ratio) * ratio * -10; // 轻微水平偏移
-            const scale = 1 - absRatio * 0.08;
-            const opacity = 1 - absRatio * 0.25;
-            item.style.transform = `perspective(900px) rotateY(${rotateY}deg) translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`;
-            item.style.opacity = String(opacity.toFixed(3));
-        });
+        // 空操作 — 不再应用 3D 透视变换
     }
     function initializeFanScrollEffects() {
-        const applyFan = () => {
-            if (dom.fanScroll) {
-                applyFanScrollTransforms(dom.fanScroll);
-            }
-        };
-        if (dom.fanScroll) {
-            dom.fanScroll.addEventListener("scroll", applyFan, { passive: true });
-            window.addEventListener("resize", applyFan);
-        }
-        // 监听自定义事件：重新应用扇形效果
-        document.addEventListener("fan:refresh", applyFan);
-        // 初始应用
-        window.requestAnimationFrame(() => {
-            applyFan();
-        });
-        window.setTimeout(applyFan, 60);
+        // 扇形效果已移除，列表现为普通滚动列表
     }
 
     function initializeMobileFavoriteToggle() {
@@ -3965,6 +3983,45 @@ function setupInteractions() {
 
     dom.volumeSlider.addEventListener("input", handleVolumeChange);
 
+    // 音量弹出层：点击icon显示/隐藏
+    if (dom.volumeIconBtn) {
+        dom.volumeIconBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const popover = dom.volumePopover;
+            if (!popover) return;
+            const isVisible = popover.classList.contains("is-visible");
+            if (isVisible) {
+                popover.classList.remove("is-visible");
+                popover.setAttribute("hidden", "");
+                dom.volumeIconBtn.setAttribute("aria-expanded", "false");
+                dom.volumeIconBtn.classList.remove("is-active");
+            } else {
+                popover.removeAttribute("hidden");
+                popover.classList.add("is-visible");
+                dom.volumeIconBtn.setAttribute("aria-expanded", "true");
+                dom.volumeIconBtn.classList.add("is-active");
+            }
+        });
+    }
+
+    // 点击其他区域关闭音量弹出层
+    if (dom.volumePopover) {
+        dom.volumePopover.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+        document.addEventListener("click", (e) => {
+            if (dom.volumePopover && dom.volumePopover.classList.contains("is-visible")) {
+                if (!dom.volumeIconBtn?.contains(e.target) && !dom.volumePopover.contains(e.target)) {
+                    dom.volumePopover.classList.remove("is-visible");
+                    dom.volumePopover.setAttribute("hidden", "");
+                    dom.volumeIconBtn?.setAttribute("aria-expanded", "false");
+                    dom.volumeIconBtn?.classList.remove("is-active");
+                }
+            }
+        });
+    }
+
     if (dom.sourceSelectButton && dom.sourceMenu) {
         dom.sourceSelectButton.addEventListener("click", toggleSourceMenu);
         dom.sourceMenu.addEventListener("click", handleSourceSelection);
@@ -3978,6 +4035,17 @@ function setupInteractions() {
         setQualityAnchorState(dom.mobileQualityToggle, false);
     }
     dom.playerQualityMenu.addEventListener("click", handlePlayerQualitySelection);
+
+    // 底栏收藏快捷按钮
+    if (dom.playerBarFavBtn) {
+        dom.playerBarFavBtn.addEventListener("click", () => {
+            if (!state.currentSong) {
+                showNotification("请先播放一首歌曲", "info");
+                return;
+            }
+            toggleFavorite(state.currentSong);
+        });
+    }
 
     if (isMobileView && dom.albumCover) {
         dom.albumCover.addEventListener("click", () => {
@@ -4520,22 +4588,21 @@ function getVisibleLoadMoreButton() {
     return document.querySelector(".load-more-btn");
 }
 
-// 加载更多搜索结果
+// 加载更多搜索结果（懒加载模式，无需按钮）
+let isLoadingMore = false;
 async function loadMoreResults() {
-    if (!state.hasMoreResults || !state.searchKeyword) {
-        debugLog("没有更多结果或搜索关键词为空");
+    if (!state.hasMoreResults || !state.searchKeyword || isLoadingMore) {
         return;
     }
 
-    const loadMoreBtn = getVisibleLoadMoreButton();
-    if (!loadMoreBtn) {
-        debugLog("找不到加载更多按钮");
-        return;
-    }
+    const visibleContainer = [dom.desktopSearchResultsList, dom.mobileSearchResultsList, dom.searchResultsList, dom.searchResults].find(el => el && el.offsetParent);
 
     try {
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.innerHTML = '<span class="loader"></span><span>加载中...</span>';
+        isLoadingMore = true;
+        if (visibleContainer) {
+            removeLazyLoadingIndicator(visibleContainer);
+            visibleContainer.appendChild(createLazyLoadingIndicator());
+        }
 
         state.searchPage++;
         debugLog(`加载第 ${state.searchPage} 页结果`);
@@ -4555,18 +4622,16 @@ async function loadMoreResults() {
             debugLog(`加载完成: 新增 ${results.length} 个结果`);
         } else {
             state.hasMoreResults = false;
-            showNotification("没有更多结果了");
             debugLog("没有更多结果");
         }
     } catch (error) {
         console.error("加载更多失败:", error);
         showNotification("加载失败，请稍后重试", "error");
-        state.searchPage--; // 回退页码
+        state.searchPage--;
     } finally {
-        const btn = getVisibleLoadMoreButton();
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = "<i class=\"fas fa-plus\"></i><span>加载更多</span>";
+        isLoadingMore = false;
+        if (visibleContainer) {
+            removeLazyLoadingIndicator(visibleContainer);
         }
     }
 }
@@ -4879,16 +4944,21 @@ function importSelectedSearchResults(target = "playlist") {
 }
 
 function createLoadMoreButton(extraClass = "") {
-    const button = document.createElement("button");
-    button.className = "load-more-btn " + extraClass;
-    button.type = "button";
-    button.innerHTML = '<i class="fas fa-plus"></i><span>加载更多</span>';
-    button.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        loadMoreResults();
-    });
-    return button;
+    // 不再创建加载更多按钮，返回空元素
+    return document.createComment("load-more removed");
+}
+
+function createLazyLoadingIndicator() {
+    const indicator = document.createElement("div");
+    indicator.className = "lazy-loading-indicator";
+    indicator.innerHTML = '<span class="loader"></span><span>加载中...</span>';
+    return indicator;
+}
+
+function removeLazyLoadingIndicator(container) {
+    if (!container) return;
+    const existing = container.querySelector(".lazy-loading-indicator");
+    if (existing) existing.remove();
 }
 
 function renderSearchResultsInto(container, newItems, options = {}) {
@@ -4962,11 +5032,9 @@ function displaySearchResults(newItems, options = {}) {
             });
             container.appendChild(fragment);
             state.renderedSearchCount += itemsToAppend.length;
-            if (state.hasMoreResults) {
-                container.appendChild(createLoadMoreButton());
-            }
+            // 不再添加加载更多按钮，改用懒加载
         } else if (state.hasMoreResults) {
-            container.appendChild(createLoadMoreButton());
+            // 不再添加加载更多按钮
         }
     } else {
         if (itemsToAppend.length > 0) {
@@ -4976,6 +5044,7 @@ function displaySearchResults(newItems, options = {}) {
 
     // 桌面端搜索下拉容器渲染
     if (dom.desktopSearchDropdown) {
+        dom.desktopSearchDropdown.removeAttribute("hidden");
         dom.desktopSearchDropdown.classList.add("is-visible");
         renderSearchResultsInto(dom.desktopSearchResultsList, newItems, {
             reset,
@@ -5664,6 +5733,25 @@ function updateFavoriteIcons() {
         dom.currentFavoriteToggle.setAttribute('aria-label', label);
         dom.currentFavoriteToggle.setAttribute('title', label);
         const icon = dom.currentFavoriteToggle.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fas', Boolean(isActive));
+            icon.classList.toggle('far', !isActive);
+            icon.classList.toggle('fa-solid', Boolean(isActive));
+            icon.classList.toggle('fa-regular', !isActive);
+        }
+    }
+
+    // 同步底栏收藏快捷按钮状态
+    if (dom.playerBarFavBtn) {
+        const currentSong = state.currentSong;
+        const key = currentSong ? getSongKey(currentSong) : null;
+        const isActive = key && favoriteKeys.has(key);
+        dom.playerBarFavBtn.classList.toggle('is-active', Boolean(isActive));
+        dom.playerBarFavBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        const label = isActive ? '取消收藏当前歌曲' : '收藏当前歌曲';
+        dom.playerBarFavBtn.setAttribute('aria-label', label);
+        dom.playerBarFavBtn.setAttribute('title', label);
+        const icon = dom.playerBarFavBtn.querySelector('i');
         if (icon) {
             icon.classList.toggle('fas', Boolean(isActive));
             icon.classList.toggle('far', !isActive);

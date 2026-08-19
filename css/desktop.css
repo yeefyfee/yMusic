@@ -28,30 +28,29 @@ html.desktop-view .side-panel-trigger {
 }
 
 /* ---------- 桌面端：搜索下拉最大高度精确控制 ---------- */
-/* 保证下拉面板高度控制在半屏不到，不遮挡居中歌词核心区域 */
 html.desktop-view .desktop-search__dropdown {
-    max-height: min(42vh, 520px);
+    max-height: 62vh;
 }
 
 /* ---------- 桌面端：歌词舞台左右留白微调 ---------- */
 /* 为左右两侧 UI 元素（搜索栏、扇形面板）预留安全空间 */
 html.desktop-view .lyrics-stage {
-    padding-left: max(8vw, 580px);
-    padding-right: max(8vw, 560px);
+    padding-left: max(4vw, 320px);
+    padding-right: max(4vw, 300px);
 }
 
 /* 小屏桌面：减小左右留白，保证歌词可读性 */
 @media screen and (max-width: 1440px) {
     html.desktop-view .lyrics-stage {
-        padding-left: max(6vw, 520px);
-        padding-right: max(6vw, 520px);
+        padding-left: max(3vw, 260px);
+        padding-right: max(3vw, 240px);
     }
 }
 
 @media screen and (max-width: 1200px) {
     html.desktop-view .lyrics-stage {
-        padding-left: 40px;
-        padding-right: 60px;
+        padding-left: 30px;
+        padding-right: 50px;
     }
 
     html.desktop-view .side-panel {
@@ -61,7 +60,7 @@ html.desktop-view .lyrics-stage {
 
 /* ---------- 桌面端：搜索栏最大宽度限制 ---------- */
 html.desktop-view .desktop-search {
-    width: min(560px, calc(100vw - 64px));
+    width: 220px;
 }
 
 /* ---------- 桌面端：右侧面板精细动画 ---------- */
@@ -101,32 +100,89 @@ html.desktop-view .fan-item.highlighted {
     z-index: 5;
 }
 
-/* ---------- 桌面端：播放器底栏 3 列栅格响应式 ---------- */
+/* ---------- 桌面端：播放器药丸响应式 ---------- */
+@media screen and (max-width: 1400px) {
+    html.desktop-view .player-bar {
+        width: 880px;
+    }
+}
+
 @media screen and (max-width: 1280px) {
     html.desktop-view .player-bar {
-        grid-template-columns: minmax(220px, 1fr) minmax(420px, 2fr) minmax(240px, 1fr);
-        gap: 16px;
-        padding: 0 20px;
+        width: 780px;
+        grid-template-columns: 160px 1fr 240px;
+        gap: 10px;
+    }
+}
+
+@media screen and (max-width: 1150px) {
+    html.desktop-view .player-bar {
+        width: 680px;
+        grid-template-columns: 140px 1fr 200px;
+        gap: 8px;
+        padding: 0 16px;
     }
 
     html.desktop-view .volume-slider {
-        width: 80px;
+        width: 50px;
     }
 }
 
 @media screen and (max-width: 1024px) {
     html.desktop-view .player-bar {
-        grid-template-columns: minmax(180px, 1fr) minmax(340px, 2fr) auto;
-        gap: 12px;
-        padding: 0 16px;
+        width: 580px;
+        grid-template-columns: 120px 1fr 160px;
+        height: 60px;
+        gap: 8px;
+        padding: 0 12px;
     }
 
-    html.desktop-view .player-bar__quality {
+    html.desktop-view .player-bar__song-title {
+        font-size: 12px;
+    }
+
+    html.desktop-view .player-bar__song-artist {
+        font-size: 10px;
+    }
+
+    html.desktop-view .quality-btn span,
+    html.desktop-view .volume-slider {
         display: none;
     }
 
+    html.desktop-view .transport-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    html.desktop-view .transport-btn--play {
+        width: 38px;
+        height: 38px;
+        font-size: 13px;
+    }
+
+    html.desktop-view .player-bar__transport {
+        gap: 8px;
+    }
+}
+
+@media screen and (max-width: 880px) {
+    html.desktop-view .player-bar {
+        width: calc(100vw - 24px);
+        grid-template-columns: 120px 1fr auto;
+        gap: 8px;
+        height: 62px;
+        padding: 0 12px;
+    }
+
+    html.desktop-view .player-bar__quality,
     html.desktop-view .volume-slider {
-        width: 60px;
+        display: none;
+    }
+    
+    html.desktop-view .player-bar__volume {
+        gap: 0;
     }
 }
 
@@ -168,6 +224,8 @@ html.desktop-view .search-header,
 html.desktop-view .search-bar-unified,
 html.desktop-view .search-input-wrapper,
 html.desktop-view .search-results-toolbar,
-html.desktop-view .playlist-action-btn {
+html.desktop-view .playlist-action-btn,
+html.desktop-view #themeToggleButton,
+html.desktop-view #openSettingsBtn {
     display: none !important;
 }

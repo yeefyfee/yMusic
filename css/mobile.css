@@ -646,16 +646,22 @@ body.mobile-view .player-bar {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 12px;
     height: auto;
-    min-height: var(--player-bar-h, 92px);
-    padding: 10px 14px;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    min-height: 64px;
+    width: calc(100vw - 20px);
+    max-width: none;
+    margin: 0 auto;
+    padding: 8px 16px;
+    padding-bottom: 8px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     z-index: 100;
     grid-template-columns: none;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 body.mobile-view .player-bar__left {

@@ -1,9 +1,9 @@
 /* =========================================================
-   Solara - 桌面端专属样式
+   yMusic - 桌面端专属样式（Mineradio 风格）
    设计原则：
-   - 所有视觉样式已在 style.css 定义
+   - 所有视觉变量已在 style.css 定义
    - 本文件仅处理：移动端元素隐藏、桌面端特定布局微调
-   - 严格遵循 Web 可访问性指南与性能最佳实践
+   - 保留原类名与结构，仅升级视觉细节
    ========================================================= */
 
 /* ---------- 隐藏移动端专属 UI ---------- */
@@ -70,9 +70,9 @@ html.desktop-view body.side-panel-open::after {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.18);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    background: rgba(3, 4, 10, 0.22);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     z-index: 205;
     pointer-events: none;
     opacity: 0;
@@ -88,7 +88,7 @@ html.desktop-view .lyrics-stage__viewport {
     scrollbar-width: none;
 }
 
-/* ---------- 桌面端：扇形项目动态旋转角度增强（基于滚动位置的JS会控制 style 属性，这里做后备） ---------- */
+/* ---------- 桌面端：扇形项目动态旋转角度增强 ---------- */
 html.desktop-view .fan-item {
     will-change: transform, background-color, box-shadow;
 }
@@ -130,7 +130,7 @@ html.desktop-view .fan-item.highlighted {
     }
 }
 
-/* ---------- 桌面端：focus-visible 统一焦点环（补充 style.css 覆盖） ---------- */
+/* ---------- 桌面端：focus-visible 统一焦点环 ---------- */
 html.desktop-view .fan-item:focus-visible,
 html.desktop-view .search-result-item:focus-visible,
 html.desktop-view .playlist-item:focus-visible {
@@ -140,7 +140,7 @@ html.desktop-view .playlist-item:focus-visible {
 
 /* ---------- 桌面端：选中文本颜色适配主题 ---------- */
 html.desktop-view ::selection {
-    background: rgba(26, 188, 156, 0.35);
+    background: rgba(139, 92, 246, 0.35);
     color: #ffffff;
 }
 

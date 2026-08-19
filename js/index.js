@@ -1,5 +1,5 @@
 const dom = {
-    container: document.getElementById("mainContainer"),
+    container: document.body,
     backgroundStage: document.getElementById("backgroundStage"),
     backgroundBaseLayer: document.getElementById("backgroundBaseLayer"),
     backgroundTransitionLayer: document.getElementById("backgroundTransitionLayer"),
@@ -7,24 +7,24 @@ const dom = {
     playlistItems: document.getElementById("playlistItems"),
     favorites: document.getElementById("favorites"),
     favoriteItems: document.getElementById("favoriteItems"),
-    lyrics: document.getElementById("lyrics"),
-    lyricsScroll: document.getElementById("lyricsScroll"),
+    lyrics: document.getElementById("lyricsViewport"),
+    lyricsScroll: document.getElementById("lyricsViewport"),
     lyricsContent: document.getElementById("lyricsContent"),
-    mobileInlineLyrics: document.getElementById("mobileInlineLyrics"),
-    mobileInlineLyricsScroll: document.getElementById("mobileInlineLyricsScroll"),
+    mobileInlineLyrics: document.getElementById("mobileLyricsFloat"),
+    mobileInlineLyricsScroll: document.getElementById("mobileInlineLyricsContent"),
     mobileInlineLyricsContent: document.getElementById("mobileInlineLyricsContent"),
     audioPlayer: document.getElementById("audioPlayer"),
     themeToggleButton: document.getElementById("themeToggleButton"),
     loadOnlineBtn: document.getElementById("loadOnlineBtn"),
-    showPlaylistBtn: document.getElementById("showPlaylistBtn"),
-    showLyricsBtn: document.getElementById("showLyricsBtn"),
+    showPlaylistBtn: null,
+    showLyricsBtn: null,
     searchInput: document.getElementById("searchInput"),
-    searchBtn: document.getElementById("searchBtn"),
+    searchBtn: document.getElementById("desktopSearchBtn"),
     sourceSelectButton: document.getElementById("sourceSelectButton"),
     sourceSelectLabel: document.getElementById("sourceSelectLabel"),
     sourceMenu: document.getElementById("sourceMenu"),
-    searchResults: document.getElementById("searchResults"),
-    searchResultsList: document.getElementById("searchResultsList"),
+    searchResults: document.getElementById("desktopSearchResultsList"),
+    searchResultsList: document.getElementById("desktopSearchResultsList"),
     notification: document.getElementById("notification"),
     albumCover: document.getElementById("albumCover"),
     currentSongTitle: document.getElementById("currentSongTitle"),
@@ -69,7 +69,7 @@ const dom = {
     mobilePanel: document.getElementById("mobilePanel"),
     mobileQueueToggle: document.getElementById("mobileQueueToggle"),
     shuffleToggleBtn: document.getElementById("shuffleToggleBtn"),
-    searchArea: document.getElementById("searchArea"),
+    searchArea: document.getElementById("desktopSearch"),
     libraryTabs: Array.from(document.querySelectorAll(".playlist-tab[data-target]")),
     addAllFavoritesBtn: document.getElementById("addAllFavoritesBtn"),
     importFavoritesBtn: document.getElementById("importFavoritesBtn"),
@@ -82,7 +82,7 @@ const dom = {
     saveSettingsBtn: document.getElementById("saveSettingsBtn"),
     openSettingsBtn: document.getElementById("openSettingsBtn"),
     radarGenreList: document.getElementById("radarGenreList"),
-    logo: document.querySelector(".header h1"),
+    logo: null,
     // ===== 新布局元素 =====
     albumBg: document.getElementById("albumBg"),
     albumBgImage: document.getElementById("albumBgImage"),
@@ -4179,7 +4179,7 @@ function setupInteractions() {
 
     // 修复：点击搜索区域外部时隐藏搜索结果
     document.addEventListener("click", (e) => {
-        const searchArea = document.querySelector(".search-area");
+        const searchArea = dom.searchArea;
         if (searchArea && !searchArea.contains(e.target) && state.isSearchMode) {
             debugLog("点击搜索区域外部，隐藏搜索结果");
             hideSearchResults();
@@ -4227,16 +4227,9 @@ function setupInteractions() {
     });
 
     // 修复：使用更强健的事件委托处理加载更多按钮点击
-    if (dom.searchResults) {
-        dom.searchResults.addEventListener("click", (e) => {
-            debugLog(`点击事件触发: ${e.target.tagName} ${e.target.className} ${e.target.id}`);
-
-            // 检查多种可能的目标元素
-            const loadMoreBtn = e.target.closest(".load-more-btn") || 
-                               e.target.closest("#loadMoreBtn") ||
-                               (e.target.id === "loadMoreBtn" ? e.target : null) ||
-                               (e.target.classList.contains("load-more-btn") ? e.target : null);
-
+    [dom.desktopSearchResultsList, dom.mobileSearchResultsList, dom.searchResults].filter(Boolean).forEach((list) => {
+        list.addEventListener("click", (e) => {
+            const loadMoreBtn = e.target.closest(".load-more-btn");
             if (loadMoreBtn) {
                 debugLog("检测到加载更多按钮点击");
                 e.preventDefault();
@@ -4244,11 +4237,11 @@ function setupInteractions() {
                 loadMoreResults();
             }
         });
-    }
+    });
 
     // 额外的直接事件监听器作为备用
     document.addEventListener("click", (e) => {
-        if (e.target.id === "loadMoreBtn" || e.target.closest("#loadMoreBtn")) {
+        if (e.target.closest(".load-more-btn")) {
             debugLog("备用事件监听器触发");
             e.preventDefault();
             e.stopPropagation();
@@ -4508,6 +4501,25 @@ async function performSearch(isLiveSearch = false, sourceInput) {
     }
 }
 
+function getVisibleLoadMoreButton() {
+    const candidates = [
+        dom.desktopSearchResultsList,
+        dom.mobileSearchResultsList,
+        dom.searchResultsList,
+        dom.searchResults,
+    ].filter(Boolean);
+    for (const container of candidates) {
+        if (!container.offsetParent) {
+            continue;
+        }
+        const btn = container.querySelector(".load-more-btn");
+        if (btn) {
+            return btn;
+        }
+    }
+    return document.querySelector(".load-more-btn");
+}
+
 // 加载更多搜索结果
 async function loadMoreResults() {
     if (!state.hasMoreResults || !state.searchKeyword) {
@@ -4515,7 +4527,7 @@ async function loadMoreResults() {
         return;
     }
 
-    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    const loadMoreBtn = getVisibleLoadMoreButton();
     if (!loadMoreBtn) {
         debugLog("找不到加载更多按钮");
         return;
@@ -4551,9 +4563,10 @@ async function loadMoreResults() {
         showNotification("加载失败，请稍后重试", "error");
         state.searchPage--; // 回退页码
     } finally {
-        if (loadMoreBtn) {
-            loadMoreBtn.disabled = false;
-            loadMoreBtn.innerHTML = "<i class=\"fas fa-plus\"></i><span>加载更多</span>";
+        const btn = getVisibleLoadMoreButton();
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = "<i class=\"fas fa-plus\"></i><span>加载更多</span>";
         }
     }
 }
@@ -4665,14 +4678,17 @@ function applySelectionStateToElement(item, isSelected) {
 }
 
 function updateSearchResultSelectionUI(index) {
-    const container = dom.searchResultsList || dom.searchResults;
-    if (!container) {
+    const containers = [dom.searchResultsList, dom.searchResults, dom.desktopSearchResultsList, dom.mobileSearchResultsList].filter(Boolean);
+    if (containers.length === 0) {
         return;
     }
     const numericIndex = Number(index);
-    const item = container.querySelector(`.search-result-item[data-index="${numericIndex}"]`);
     ensureSelectedSearchResultsSet();
-    applySelectionStateToElement(item, state.selectedSearchResults.has(numericIndex));
+    const isSelected = state.selectedSearchResults.has(numericIndex);
+    containers.forEach((container) => {
+        const item = container.querySelector(`.search-result-item[data-index="${numericIndex}"]`);
+        applySelectionStateToElement(item, isSelected);
+    });
 }
 
 function updateImportSelectedButton() {

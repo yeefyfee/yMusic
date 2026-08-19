@@ -1,10 +1,11 @@
 /* =========================================================
-   Solara - 移动端专属样式
+   yMusic - 移动端专属样式（Mineradio 风格）
    设计理念：
    - 专辑封面作为全屏沉浸式背景
    - 歌词悬浮在专辑图片上（毛玻璃卡片）
    - 点击搜索按钮弹出遮罩全屏搜索
    - 移除容器式悬浮效果，全屏沉浸体验
+   - 蓝紫粉霓虹渐变 + 深空银河背景
    ========================================================= */
 
 /* ---------- 基础重置：全屏覆盖、禁用横向滚动 ---------- */
@@ -14,7 +15,7 @@ body.mobile-view {
     height: var(--mobile-vh, 100dvh);
     min-height: var(--mobile-vh, 100dvh);
     overflow: hidden;
-    background: #06070d;
+    background: var(--bg-base);
     color: #f5f7fa;
     position: fixed;
     inset: 0;
@@ -67,26 +68,26 @@ body.mobile-view .album-bg {
 }
 
 body.mobile-view .album-bg__image {
-    filter: blur(32px) saturate(130%) brightness(0.68);
-    transform: scale(1.12);
+    filter: blur(28px) saturate(128%) brightness(0.84);
+    transform: scale(1.10);
 }
 
 body.mobile-view .album-bg__overlay {
     background:
         linear-gradient(180deg,
-            rgba(6, 7, 13, 0.55) 0%,
-            rgba(6, 7, 13, 0.18) 20%,
-            rgba(6, 7, 13, 0.28) 55%,
-            rgba(6, 7, 13, 0.92) 100%),
+            rgba(3, 4, 10, 0.42) 0%,
+            rgba(3, 4, 10, 0.10) 20%,
+            rgba(3, 4, 10, 0.24) 58%,
+            rgba(3, 4, 10, 0.80) 100%),
         linear-gradient(90deg,
-            rgba(6, 7, 13, 0.45) 0%,
-            rgba(6, 7, 13, 0.06) 20%,
-            rgba(6, 7, 13, 0.06) 80%,
-            rgba(6, 7, 13, 0.45) 100%);
+            rgba(3, 4, 10, 0.44) 0%,
+            rgba(3, 4, 10, 0.04) 22%,
+            rgba(3, 4, 10, 0.04) 78%,
+            rgba(3, 4, 10, 0.44) 100%);
 }
 
 body.mobile-view .album-bg__vignette {
-    opacity: 0.95;
+    opacity: 0.68;
 }
 
 /* ---------- 移动端：顶部工具栏 ---------- */
@@ -100,19 +101,19 @@ body.mobile-view .mobile-toolbar {
     align-items: center;
     justify-content: space-between;
     padding: calc(env(safe-area-inset-top) + 14px) 20px 14px;
-    background: linear-gradient(180deg, rgba(6, 7, 13, 0.72) 0%, transparent 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: linear-gradient(180deg, rgba(3, 4, 10, 0.78) 0%, transparent 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 body.mobile-view .mobile-toolbar__title {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     color: rgba(255, 255, 255, 0.92);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-align: center;
     text-transform: uppercase;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 body.mobile-view .mobile-toolbar__actions {
@@ -125,10 +126,10 @@ body.mobile-view .mobile-toolbar__button {
     width: 42px;
     height: 42px;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     color: rgba(255, 255, 255, 0.92);
     display: inline-flex;
     align-items: center;
@@ -136,6 +137,7 @@ body.mobile-view .mobile-toolbar__button {
     font-size: 15px;
     transition: all var(--dur-fast) var(--ease-smooth);
     cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 body.mobile-view .mobile-toolbar__button:active {
@@ -184,10 +186,11 @@ body.mobile-view .mobile-stage__cover {
     aspect-ratio: 1 / 1;
     border-radius: 22px;
     overflow: hidden;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-pink));
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.08);
+        0 24px 70px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 0 50px rgba(139, 92, 246, 0.22);
     position: relative;
     transition: transform var(--dur-slow) var(--ease-smooth),
                 box-shadow var(--dur-slow) var(--ease-smooth);
@@ -196,9 +199,9 @@ body.mobile-view .mobile-stage__cover {
 
 body.mobile-view.is-playing .mobile-stage__cover {
     box-shadow:
-        0 28px 80px rgba(0, 0, 0, 0.55),
+        0 32px 90px rgba(0, 0, 0, 0.6),
         0 0 0 1px rgba(255, 255, 255, 0.1),
-        0 0 40px rgba(26, 188, 156, 0.2);
+        0 0 60px rgba(139, 92, 246, 0.3);
 }
 
 body.mobile-view .mobile-stage__cover .placeholder {
@@ -225,12 +228,12 @@ body.mobile-view .mobile-stage__lyrics-float {
     flex: 1;
     min-height: 0;
     border-radius: 20px;
-    background: rgba(10, 12, 20, 0.42);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    background: rgba(8, 9, 18, 0.46);
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-        0 16px 50px rgba(0, 0, 0, 0.4),
+        0 18px 55px rgba(0, 0, 0, 0.45),
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
     padding: 14px 4px 14px 4px;
     overflow: hidden;
@@ -281,7 +284,7 @@ body.mobile-view .mobile-stage__lyrics-content > div {
     font-size: clamp(14px, 3.6vw, 17px);
     font-weight: 600;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.42);
+    color: rgba(255, 255, 255, 0.4);
     transition: all 0.4s var(--ease-smooth);
     word-break: break-word;
     white-space: pre-wrap;
@@ -291,13 +294,13 @@ body.mobile-view .mobile-stage__lyrics-content > div {
 }
 
 body.mobile-view .mobile-stage__lyrics-content > div.lyric--passed {
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.52);
     opacity: 0.5;
     transform: scale(0.95);
 }
 
 body.mobile-view .mobile-stage__lyrics-content > div.lyric--next {
-    color: rgba(255, 255, 255, 0.52);
+    color: rgba(255, 255, 255, 0.48);
     opacity: 0.62;
     transform: scale(0.96);
 }
@@ -310,7 +313,7 @@ body.mobile-view .mobile-stage__lyrics-content > div.current {
     opacity: 1;
     transform: scale(1);
     text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5),
-                 0 0 24px rgba(26, 188, 156, 0.35);
+                 0 0 28px rgba(139, 92, 246, 0.45);
     letter-spacing: 0.02em;
     padding: 14px 14px;
 }
@@ -323,7 +326,7 @@ body.mobile-view .mobile-stage__lyrics-float.empty::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.38);
+    color: rgba(255, 255, 255, 0.36);
     font-size: 13px;
     font-style: italic;
     font-weight: 400;
@@ -356,7 +359,7 @@ body.mobile-view .mobile-stage__title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 
 body.mobile-view .mobile-stage__artist {
@@ -376,8 +379,8 @@ body.mobile-view .mobile-quality-chip {
     gap: 6px;
     padding: 7px 16px;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.9);
     font-size: 12px;
     font-weight: 500;
@@ -401,9 +404,9 @@ body.mobile-view .mobile-overlay-scrim {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(4, 6, 10, 0.55);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(3, 4, 10, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.35s ease;
@@ -422,9 +425,9 @@ body.mobile-view .mobile-search-mask {
     position: fixed;
     inset: 0;
     z-index: 150;
-    background: rgba(8, 10, 16, 0.92);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    background: rgba(6, 7, 14, 0.95);
+    backdrop-filter: blur(44px) saturate(180%);
+    -webkit-backdrop-filter: blur(44px) saturate(180%);
     opacity: 0;
     pointer-events: none;
     transform: translateY(8px);
@@ -465,16 +468,16 @@ body.mobile-view .mobile-search-header {
 body.mobile-view .mobile-search-title {
     margin: 0;
     font-size: 22px;
-    font-weight: 800;
+    font-weight: 900;
     color: #ffffff;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 body.mobile-view .mobile-close-btn {
     width: 38px;
     height: 38px;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.88);
     cursor: pointer;
@@ -501,19 +504,19 @@ body.mobile-view .mobile-search-bar {
     align-items: center;
     gap: 10px;
     padding: 10px 14px 10px 16px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(26, 188, 156, 0.3);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1.5px solid rgba(139, 92, 246, 0.35);
     border-radius: var(--radius-xl);
     transition: all var(--dur-fast) var(--ease-smooth);
 }
 
 body.mobile-view .mobile-search-bar:focus-within {
-    border-color: rgba(26, 188, 156, 0.6);
-    box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.14);
+    border-color: rgba(139, 92, 246, 0.65);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.14);
 }
 
 body.mobile-view .mobile-search-icon {
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.42);
     font-size: 14px;
     flex-shrink: 0;
 }
@@ -531,13 +534,13 @@ body.mobile-view .mobile-search-input {
 }
 
 body.mobile-view .mobile-search-input:focus-visible {
-    outline: 2px solid rgba(26, 188, 156, 0.55);
+    outline: 2px solid rgba(139, 92, 246, 0.55);
     outline-offset: 4px;
     border-radius: 8px;
 }
 
 body.mobile-view .mobile-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.38);
+    color: rgba(255, 255, 255, 0.36);
 }
 
 body.mobile-view .mobile-search-source {
@@ -547,8 +550,8 @@ body.mobile-view .mobile-search-source {
 body.mobile-view .mobile-search-source .source-select-btn {
     padding: 8px 14px;
     font-size: 12.5px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.72);
     border-radius: var(--radius-full);
 }
@@ -587,7 +590,7 @@ body.mobile-view .mobile-search-results::-webkit-scrollbar {
 }
 
 body.mobile-view .mobile-search-results::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.16);
     border-radius: 999px;
 }
 
@@ -601,13 +604,13 @@ body.mobile-view .mobile-search-results .search-result-item {
 }
 
 body.mobile-view .mobile-search-results .search-result-item:active {
-    background: rgba(26, 188, 156, 0.12);
+    background: rgba(139, 92, 246, 0.12);
     transform: scale(0.985);
 }
 
 body.mobile-view .mobile-search-results .search-result-item.selected {
-    background: rgba(26, 188, 156, 0.18);
-    border-color: rgba(26, 188, 156, 0.32);
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.32);
 }
 
 body.mobile-view .mobile-search-results .search-result-title {
@@ -634,7 +637,7 @@ body.mobile-view .mobile-search-pagination .load-more-btn {
 }
 
 body.mobile-view .mobile-search-pagination .load-more-btn:active {
-    background: rgba(26, 188, 156, 0.1);
+    background: rgba(139, 92, 246, 0.12);
     transform: scale(0.98);
 }
 
@@ -703,7 +706,7 @@ body.mobile-view .player-bar__progress {
 body.mobile-view .player-bar__time {
     font-size: 11px;
     min-width: 38px;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.52);
 }
 
 /* ---------- 移动端：底部抽屉式播放列表 ---------- */
@@ -715,16 +718,16 @@ body.mobile-view .mobile-panel {
     bottom: 0;
     transform: translateY(108%);
     width: 100%;
-    background: rgba(13, 16, 24, 0.98);
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    background: rgba(10, 11, 22, 0.98);
+    backdrop-filter: blur(34px) saturate(180%);
+    -webkit-backdrop-filter: blur(34px) saturate(180%);
     border-radius: 28px 28px 0 0;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 14px 16px calc(env(safe-area-inset-bottom) + 18px);
     z-index: 400;
     flex-direction: column;
     gap: 14px;
-    box-shadow: 0 -30px 80px rgba(0, 0, 0, 0.65);
+    box-shadow: 0 -30px 90px rgba(0, 0, 0, 0.7);
     transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
     height: calc(var(--mobile-vh, 100dvh) - clamp(140px, 38vw, 220px));
     max-height: calc(var(--mobile-vh, 100dvh) - 140px);
@@ -774,10 +777,10 @@ body.mobile-view .playlist-tab {
 }
 
 body.mobile-view .playlist-tab.active {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-pink));
     color: #ffffff;
     border-color: transparent;
-    box-shadow: 0 6px 18px rgba(26, 188, 156, 0.35);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
 }
 
 body.mobile-view .mobile-panel-actions {
@@ -801,7 +804,7 @@ body.mobile-view .mobile-panel-action-btn {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.04);
     color: rgba(255, 255, 255, 0.72);
     cursor: pointer;
@@ -823,8 +826,8 @@ body.mobile-view .mobile-panel-action-btn:disabled {
 }
 
 body.mobile-view .mobile-panel-clear-btn {
-    color: rgba(255, 120, 110, 0.9);
-    border-color: rgba(255, 120, 110, 0.2);
+    color: rgba(251, 113, 133, 0.9);
+    border-color: rgba(251, 113, 133, 0.2);
 }
 
 /* 播放列表 tab 内容 */
@@ -892,8 +895,8 @@ body.mobile-view .playlist-items .playlist-item:active {
 }
 
 body.mobile-view .playlist-items .playlist-item.current {
-    background: rgba(26, 188, 156, 0.22);
-    border-color: rgba(26, 188, 156, 0.35);
+    background: rgba(139, 92, 246, 0.22);
+    border-color: rgba(139, 92, 246, 0.35);
     color: #ffffff;
     font-weight: 600;
 }
@@ -929,7 +932,7 @@ body.mobile-view .playlist.favorites.empty .playlist-scroll::before {
     align-items: center;
     justify-content: center;
     height: 160px;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.32);
     font-size: 13.5px;
     font-style: italic;
 }
@@ -938,12 +941,12 @@ body.mobile-view .playlist.favorites.empty .playlist-scroll::before {
 body.mobile-view .import-dropdown-menu,
 body.mobile-view .source-menu,
 body.mobile-view .player-quality-menu {
-    background: rgba(22, 24, 32, 0.98);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: rgba(16, 17, 28, 0.98);
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
-    box-shadow: 0 14px 50px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 14px 50px rgba(0, 0, 0, 0.6);
     overflow: hidden;
 }
 
@@ -958,13 +961,13 @@ body.mobile-view .quality-option {
 body.mobile-view .import-dropdown-item:active,
 body.mobile-view .source-option:active,
 body.mobile-view .quality-option:active {
-    background: rgba(26, 188, 156, 0.18);
+    background: rgba(139, 92, 246, 0.18);
 }
 
 body.mobile-view .import-dropdown-item.is-active,
 body.mobile-view .source-option.active,
 body.mobile-view .quality-option.active {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-pink));
     color: #ffffff;
 }
 

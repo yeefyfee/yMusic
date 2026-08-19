@@ -1,105 +1,173 @@
-/* Desktop-only overrides for mobile UI chrome */
-html.desktop-view .mobile-status-bar,
+/* =========================================================
+   Solara - 桌面端专属样式
+   设计原则：
+   - 所有视觉样式已在 style.css 定义
+   - 本文件仅处理：移动端元素隐藏、桌面端特定布局微调
+   - 严格遵循 Web 可访问性指南与性能最佳实践
+   ========================================================= */
+
+/* ---------- 隐藏移动端专属 UI ---------- */
 html.desktop-view .mobile-toolbar,
-html.desktop-view .mobile-panel-header,
+html.desktop-view .mobile-stage,
+html.desktop-view .mobile-search-mask,
+html.desktop-view .mobile-panel,
 html.desktop-view .mobile-overlay-scrim,
 html.desktop-view .mobile-quality-chip,
-html.desktop-view .mobile-close-btn,
-html.desktop-view .mobile-turntable__tonearm,
-html.desktop-view .mobile-turntable__label,
-html.desktop-view .mobile-inline-lyrics {
+html.desktop-view .mobile-close-btn {
+    display: none !important;
+}
+
+/* ---------- 桌面端：transport-btn--queue 隐藏（桌面端用右侧面板） ---------- */
+html.desktop-view .transport-btn--queue {
     display: none;
 }
 
-/* Remove circular decoration from playlist action buttons on desktop */
-html.desktop-view .playlist-action-btn {
-    width: auto;
-    height: auto;
-    padding: 6px;
-    border: none;
-    border-radius: 6px;
-    background: none;
-    box-shadow: none;
-    color: var(--text-secondary-color);
-    transition: color 0.2s ease;
+/* ---------- 桌面端：扇形面板 hover 触发区域宽度微调 ---------- */
+html.desktop-view .side-panel-trigger {
+    width: 60px;
 }
 
-html.desktop-view body.dark-mode .playlist-action-btn {
-    background: none;
-    border: none;
-    box-shadow: none;
-    color: var(--text-secondary-color);
+/* ---------- 桌面端：搜索下拉最大高度精确控制 ---------- */
+/* 保证下拉面板高度控制在半屏不到，不遮挡居中歌词核心区域 */
+html.desktop-view .desktop-search__dropdown {
+    max-height: min(42vh, 520px);
 }
 
-html.desktop-view .playlist-action-btn:hover:not(:disabled),
-html.desktop-view .playlist-action-btn:focus-visible:not(:disabled) {
-    transform: none;
-    box-shadow: none;
-    filter: none;
-    border: none;
-    color: var(--primary-color);
+/* ---------- 桌面端：歌词舞台左右留白微调 ---------- */
+/* 为左右两侧 UI 元素（搜索栏、扇形面板）预留安全空间 */
+html.desktop-view .lyrics-stage {
+    padding-left: max(8vw, 580px);
+    padding-right: max(8vw, 560px);
 }
 
-html.desktop-view .playlist-action-btn--clear {
-    color: rgba(231, 76, 60, 0.85);
+/* 小屏桌面：减小左右留白，保证歌词可读性 */
+@media screen and (max-width: 1440px) {
+    html.desktop-view .lyrics-stage {
+        padding-left: max(6vw, 520px);
+        padding-right: max(6vw, 520px);
+    }
 }
 
-html.desktop-view .playlist-action-btn--clear:hover:not(:disabled),
-html.desktop-view .playlist-action-btn--clear:focus-visible:not(:disabled) {
-    color: var(--warning-color);
+@media screen and (max-width: 1200px) {
+    html.desktop-view .lyrics-stage {
+        padding-left: 40px;
+        padding-right: 60px;
+    }
+
+    html.desktop-view .side-panel {
+        width: min(440px, 55vw);
+    }
 }
 
-html.desktop-view .playlist-action-btn:focus-visible {
+/* ---------- 桌面端：搜索栏最大宽度限制 ---------- */
+html.desktop-view .desktop-search {
+    width: min(560px, calc(100vw - 64px));
+}
+
+/* ---------- 桌面端：右侧面板精细动画 ---------- */
+/* 面板打开时，增加轻微的背景过渡，避免生硬 */
+html.desktop-view body.side-panel-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 205;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-smooth);
+}
+
+html.desktop-view body.side-panel-open.showing::after {
+    opacity: 1;
+}
+
+/* ---------- 桌面端：滚动条样式增强（歌词区域用更细的滚动条） ---------- */
+html.desktop-view .lyrics-stage__viewport {
+    scrollbar-width: none;
+}
+
+/* ---------- 桌面端：扇形项目动态旋转角度增强（基于滚动位置的JS会控制 style 属性，这里做后备） ---------- */
+html.desktop-view .fan-item {
+    will-change: transform, background-color, box-shadow;
+}
+
+/* 悬停时取消扇形角度，确保可读性优先 */
+html.desktop-view .fan-item:hover,
+html.desktop-view .fan-item:focus-within,
+html.desktop-view .fan-item.current,
+html.desktop-view .fan-item.highlighted {
+    z-index: 5;
+}
+
+/* ---------- 桌面端：播放器底栏 3 列栅格响应式 ---------- */
+@media screen and (max-width: 1280px) {
+    html.desktop-view .player-bar {
+        grid-template-columns: minmax(220px, 1fr) minmax(420px, 2fr) minmax(240px, 1fr);
+        gap: 16px;
+        padding: 0 20px;
+    }
+
+    html.desktop-view .volume-slider {
+        width: 80px;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    html.desktop-view .player-bar {
+        grid-template-columns: minmax(180px, 1fr) minmax(340px, 2fr) auto;
+        gap: 12px;
+        padding: 0 16px;
+    }
+
+    html.desktop-view .player-bar__quality {
+        display: none;
+    }
+
+    html.desktop-view .volume-slider {
+        width: 60px;
+    }
+}
+
+/* ---------- 桌面端：focus-visible 统一焦点环（补充 style.css 覆盖） ---------- */
+html.desktop-view .fan-item:focus-visible,
+html.desktop-view .search-result-item:focus-visible,
+html.desktop-view .playlist-item:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
-html.desktop-view .playlist-action-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+/* ---------- 桌面端：选中文本颜色适配主题 ---------- */
+html.desktop-view ::selection {
+    background: rgba(26, 188, 156, 0.35);
+    color: #ffffff;
 }
 
-/* ===== 桌面端：导入已选按钮 - 独立定位，不影响搜索栏布局 ===== */
-
-/* 默认隐藏，仅在搜索模式下显示 */
-html.desktop-view .search-results-toolbar {
-    display: none;
-}
-
-/* search-controls-wrapper 已有 position:relative，toolbar absolute 定位以它为锚 */
-html.desktop-view .container.search-mode .search-results-toolbar {
-    display: block;
-    position: absolute;      /* 脱离 flex 流，不占任何宽度 */
-    top: 100%;               /* 紧贴 wrapper 底部 */
-    margin-top: 46px;        /* 下移到原本的相对位置 (15px + 15px + 16px) */
-    right: 0;
-    z-index: 10;
-    pointer-events: auto;
-    /* 重置移动端样式 */
-    width: auto;
-    max-width: none;
-    align-self: auto;
-    flex-shrink: unset;
-    padding: 0;
-}
-
-html.desktop-view .search-results-toolbar .import-dropdown {
-    width: auto;             /* 重置移动端 width:100% */
-}
-
-html.desktop-view .search-results-toolbar .import-selected-btn {
-    width: auto;             /* 重置移动端 width:100% */
-    justify-content: unset;  /* 重置移动端居中 */
-    border-radius: 999px;    /* 桌面端圆角胶囊 */
-    padding: 8px 16px;
-    font-size: 14px;
-}
-
-/* 搜索结果列表留出顶部空间，避免第一条结果被按钮遮挡 */
-html.desktop-view .search-results-list {
-    padding-top: 52px;
-}
-
-html.desktop-view .search-results {
-    gap: 0;
+/* ---------- 桌面端：旧结构兼容（旧 JS 可能渲染的 class，安全隐藏） ---------- */
+html.desktop-view .container,
+html.desktop-view .header,
+html.desktop-view .theme-switch-wrapper,
+html.desktop-view .warning,
+html.desktop-view .main-content,
+html.desktop-view .cover-area,
+html.desktop-view .mobile-turntable,
+html.desktop-view .mobile-inline-lyrics,
+html.desktop-view .current-song-info,
+html.desktop-view .controls,
+html.desktop-view .progress-container,
+html.desktop-view .transport-controls,
+html.desktop-view .transport-button,
+html.desktop-view .audio-tools,
+html.desktop-view .control-trailing,
+html.desktop-view .player-quality,
+html.desktop-view .volume-container,
+html.desktop-view .search-area,
+html.desktop-view .search-controls-wrapper,
+html.desktop-view .search-header,
+html.desktop-view .search-bar-unified,
+html.desktop-view .search-input-wrapper,
+html.desktop-view .search-results-toolbar,
+html.desktop-view .playlist-action-btn {
+    display: none !important;
 }

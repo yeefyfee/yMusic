@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=14">
+    <link rel="stylesheet" href="css/style.css?v=15">
     <script src="js/i18n.js"></script>
     <script>
         (function () {
@@ -31,7 +31,7 @@
                 document.documentElement.classList.add("desktop-view");
                 const desktopLink = document.createElement("link");
                 desktopLink.rel = "stylesheet";
-                desktopLink.href = "css/desktop.css?v=2";
+                desktopLink.href = "css/desktop.css?v=3";
                 desktopLink.id = "desktopStylesheet";
                 document.head.appendChild(desktopLink);
                 return;
@@ -39,7 +39,7 @@
             document.documentElement.classList.add("mobile-view");
             const link = document.createElement("link");
             link.rel = "stylesheet";
-            link.href = "css/mobile.css?v=2";
+            link.href = "css/mobile.css?v=3";
             link.id = "mobileStylesheet";
             document.head.appendChild(link);
             const setViewportUnit = () => {

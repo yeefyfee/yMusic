@@ -3169,7 +3169,14 @@ function updatePlayerQualityMenuPosition() {
 
     let top = Math.round(toggleRect.bottom + spacing);
     let openUpwards = false;
-    if (top + menuHeight > viewportHeight - spacing) {
+    // 移动端：音质选项始终在小组件上方弹出，避免遮挡底部播放控制区
+    if (isMobileView) {
+        const upwardTop = Math.round(toggleRect.top - spacing - menuHeight);
+        if (upwardTop >= spacing) {
+            top = upwardTop;
+            openUpwards = true;
+        }
+    } else if (top + menuHeight > viewportHeight - spacing) {
         const upwardTop = Math.round(toggleRect.top - spacing - menuHeight);
         if (upwardTop >= spacing) {
             top = upwardTop;
@@ -3606,11 +3613,11 @@ function setupInteractions() {
     function switchSideTab(target) {
         const showFavorites = target === "favorites";
         if (dom.sidePlaylistTab) {
-            dom.sidePlaylistTab.classList.toggle("is-active", !showFavorites);
+            dom.sidePlaylistTab.classList.toggle("active", !showFavorites);
             dom.sidePlaylistTab.setAttribute("aria-selected", showFavorites ? "false" : "true");
         }
         if (dom.sideFavoritesTab) {
-            dom.sideFavoritesTab.classList.toggle("is-active", showFavorites);
+            dom.sideFavoritesTab.classList.toggle("active", showFavorites);
             dom.sideFavoritesTab.setAttribute("aria-selected", showFavorites ? "true" : "false");
         }
         if (dom.playlistFanTrack) {

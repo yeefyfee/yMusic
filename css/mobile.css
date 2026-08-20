@@ -12,13 +12,10 @@
 html.mobile-view,
 body.mobile-view {
     width: 100%;
-    height: var(--mobile-vh, 100dvh);
-    min-height: var(--mobile-vh, 100dvh);
+    height: 100%;
     overflow: hidden;
     background: var(--bg-base);
     color: #f5f7fa;
-    position: fixed;
-    inset: 0;
     margin: 0;
     padding: 0;
     touch-action: manipulation;
@@ -430,11 +427,11 @@ body.mobile-view .mobile-search-mask {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: var(--player-bar-h, 112px);
     top: auto;
     z-index: 420;
-    height: min(82vh, calc(var(--mobile-vh, 100dvh) - 120px));
-    max-height: 82vh;
+    height: min(80vh, calc(var(--mobile-vh, 100dvh) - var(--player-bar-h, 112px) - 24px));
+    max-height: 80vh;
     background: rgba(10, 11, 22, 0.98);
     backdrop-filter: blur(34px) saturate(180%);
     -webkit-backdrop-filter: blur(34px) saturate(180%);
@@ -446,7 +443,7 @@ body.mobile-view .mobile-search-mask {
     overflow: hidden;
     opacity: 1;
     pointer-events: none;
-    transform: translateY(108%);
+    transform: translateY(112%);
     transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -670,12 +667,12 @@ body.mobile-view .mobile-search-pagination .load-more-btn:active {
     transform: scale(0.98);
 }
 
-/* ---------- 移动端：播放器底栏（简化调整） ---------- */
+/* ---------- 移动端：播放器底栏（固定于底部，始终可见） ---------- */
 body.mobile-view .player-bar {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     height: auto;
     min-height: 64px;
     width: calc(100vw - 20px);
@@ -686,11 +683,12 @@ body.mobile-view .player-bar {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    z-index: 100;
+    z-index: 600;
     grid-template-columns: none;
     border-radius: 26px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(12, 13, 22, 0.92);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
 }
 
 body.mobile-view .player-bar__left {
@@ -750,8 +748,8 @@ body.mobile-view .mobile-panel {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
-    transform: translateY(108%);
+    bottom: var(--player-bar-h, 112px);
+    transform: translateY(112%);
     width: 100%;
     background: rgba(10, 11, 22, 0.98);
     backdrop-filter: blur(34px) saturate(180%);
@@ -764,8 +762,8 @@ body.mobile-view .mobile-panel {
     gap: 14px;
     box-shadow: 0 -30px 90px rgba(0, 0, 0, 0.7);
     transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-    height: calc(var(--mobile-vh, 100dvh) - clamp(140px, 38vw, 220px));
-    max-height: calc(var(--mobile-vh, 100dvh) - 140px);
+    height: calc(var(--mobile-vh, 100dvh) - var(--player-bar-h, 112px) - clamp(140px, 38vw, 220px));
+    max-height: calc(var(--mobile-vh, 100dvh) - var(--player-bar-h, 112px) - 140px);
     min-height: 50vh;
     overflow: hidden;
     overscroll-behavior: contain;
@@ -986,7 +984,7 @@ body.mobile-view .player-quality-menu {
 }
 
 body.mobile-view .player-quality-menu {
-    z-index: 520;
+    z-index: 650;
 }
 
 body.mobile-view .player-quality-menu.open-upwards {

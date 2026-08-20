@@ -300,7 +300,6 @@
         </button>
         <div class="mobile-toolbar__title" id="mobileToolbarTitle">
             <span>Solara</span>
-            <small>© Theo</small>
         </div>
         <div class="mobile-toolbar__actions">
             <button class="mobile-toolbar__button" id="mobileQueueTopBtn" type="button" aria-label="播放列表" title="播放列表">
@@ -412,6 +411,13 @@
                 </button>
                 <button id="mobileSearchClose" class="mobile-search-close" type="button" aria-label="关闭搜索" title="关闭搜索">
                     <i class="fas fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="mobile-search-toolbar">
+                <button class="import-selected-btn" id="mobileImportSelectedBtn" type="button" disabled aria-label="添加已选歌曲到播放列表">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    <span>添加到播放列表</span>
+                    <span id="mobileImportSelectedCount" class="import-selected-count"></span>
                 </button>
             </div>
             <div class="mobile-search-results" id="mobileSearchResultsList"></div>

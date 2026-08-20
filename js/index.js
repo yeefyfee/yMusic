@@ -325,7 +325,7 @@ function closeAllMobileOverlays() {
         forceCloseMobilePanelOverlay();
     });
     return result;
-}
+        const label = count > 0 ? `添加 ${count} 首歌曲到播放列表` : "添加已选歌曲到播放列表";
 
 function updateMobileInlineLyricsAria(isOpen) {
     if (!dom.mobileInlineLyrics) {
@@ -4281,6 +4281,14 @@ function setupInteractions() {
         });
     }
 
+    if (dom.mobileImportSelectedBtn) {
+        dom.mobileImportSelectedBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            importSelectedSearchResults("playlist");
+        });
+    }
+
     if (dom.showPlaylistBtn) {
         dom.showPlaylistBtn.addEventListener("click", () => {
             if (isMobileView) {
@@ -4852,23 +4860,34 @@ function updateSearchResultSelectionUI(index) {
 
 function updateImportSelectedButton() {
     const button = dom.importSelectedBtn;
-    if (!button) {
-        return;
-    }
     ensureSelectedSearchResultsSet();
     const count = state.selectedSearchResults.size;
-    button.disabled = count === 0;
-    button.setAttribute("aria-disabled", count === 0 ? "true" : "false");
+    [
+        [dom.importSelectedBtn, dom.importSelectedCount],
+        [dom.mobileImportSelectedBtn, dom.mobileImportSelectedCount],
+    ].forEach(([actionButton, countLabel]) => {
+        if (!actionButton) {
+            return;
+        }
+        actionButton.disabled = count === 0;
+        actionButton.setAttribute("aria-disabled", count === 0 ? "true" : "false");
+        if (countLabel) {
+            countLabel.textContent = count > 0 ? `(${count})` : "";
+        }
+    });
     if (count === 0) {
         closeImportSelectedMenu();
     }
-    const countLabel = dom.importSelectedCount;
-    if (countLabel) {
-        countLabel.textContent = count > 0 ? `(${count})` : "";
+    if (dom.importSelectedBtn) {
+        const label = count > 0 ? `导入已选 (${count})` : "导入已选";
+        dom.importSelectedBtn.title = label;
+        dom.importSelectedBtn.setAttribute("aria-label", count > 0 ? `导入已选 ${count} 首歌曲` : "导入已选");
     }
-    const label = count > 0 ? `导入已选 (${count})` : "导入已选";
-    button.title = label;
-    button.setAttribute("aria-label", count > 0 ? `导入已选 ${count} 首歌曲` : "导入已选");
+    if (dom.mobileImportSelectedBtn) {
+        const label = count > 0 ? `添加 ${count} 首歌曲到播放列表` : "添加已选歌曲到播放列表";
+        dom.mobileImportSelectedBtn.title = label;
+        dom.mobileImportSelectedBtn.setAttribute("aria-label", label);
+    }
 }
 
 function toggleSearchResultSelection(index) {

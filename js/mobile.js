@@ -32,6 +32,7 @@
             return;
         }
         document.body.classList.add("mobile-search-open");
+        document.body.classList.add("drawer-open");
         document.body.classList.remove("mobile-panel-open");
         if (dom.searchArea) {
             dom.searchArea.setAttribute("aria-hidden", "false");
@@ -53,6 +54,7 @@
             return;
         }
         document.body.classList.remove("mobile-search-open");
+        document.body.classList.remove("drawer-open");
         const toggleSearchMode = window.toggleSearchMode;
         if (typeof toggleSearchMode === "function") {
             toggleSearchMode(false);
@@ -93,6 +95,7 @@
         }
         closeMobileSearchImpl();
         document.body.classList.add("mobile-panel-open");
+        document.body.classList.add("drawer-open");
         document.body.setAttribute("data-mobile-panel-view", targetView);
         updateMobileOverlayScrim();
     }
@@ -102,6 +105,9 @@
             return;
         }
         document.body.classList.remove("mobile-panel-open");
+        if (!document.body.classList.contains("mobile-search-open")) {
+            document.body.classList.remove("drawer-open");
+        }
         updateMobileOverlayScrim();
     }
 
@@ -131,6 +137,7 @@
         initialized = true;
 
         document.body.classList.add("mobile-view");
+        document.body.classList.add("mobile-panel-open", "drawer-open");
         const initialView = "playlist";
         document.body.setAttribute("data-mobile-panel-view", initialView);
         if (dom.mobilePanelTitle) {

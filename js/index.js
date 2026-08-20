@@ -71,6 +71,12 @@ const dom = {
     mobileQualityLabel: document.getElementById("mobileQualityLabel"),
     mobilePanel: document.getElementById("mobilePanel"),
     mobileQueueToggle: document.getElementById("mobileQueueToggle"),
+    mobileBatchSelectAll: document.getElementById("mobileBatchSelectAll"),
+    mobileBatchAdd: document.getElementById("mobileBatchAdd"),
+    mobileBatchRemove: document.getElementById("mobileBatchRemove"),
+    sideBatchSelectAllBtn: document.getElementById("sideBatchSelectAllBtn"),
+    sideBatchAddBtn: document.getElementById("sideBatchAddBtn"),
+    sideBatchRemoveBtn: document.getElementById("sideBatchRemoveBtn"),
     shuffleToggleBtn: document.getElementById("shuffleToggleBtn"),
     searchArea: document.getElementById("desktopSearch"),
     libraryTabs: Array.from(document.querySelectorAll(".playlist-tab[data-target]")),
@@ -114,6 +120,7 @@ const dom = {
     // 桌面端 - 扇形面板
     sidePanelTrigger: document.getElementById("sidePanelTrigger"),
     sidePanel: document.getElementById("sidePanel"),
+    sidePanelCloseBtn: document.getElementById("sidePanelCloseBtn"),
     toggleSidePanelBtn: document.getElementById("toggleSidePanelBtn"),
     sidePlaylistTab: document.getElementById("sidePlaylistTab"),
     sideFavoritesTab: document.getElementById("sideFavoritesTab"),
@@ -234,6 +241,11 @@ function updateMobileLibraryActionVisibility(showFavorites) {
     const playlistGroup = dom.mobilePlaylistActions;
     const favoritesGroup = dom.mobileFavoritesActions;
     const showFavoritesGroup = Boolean(showFavorites);
+    if (dom.mobileBatchAdd) {
+        const label = showFavoritesGroup ? "添加到播放列表" : "加入收藏";
+        dom.mobileBatchAdd.title = label;
+        dom.mobileBatchAdd.setAttribute("aria-label", label);
+    }
 
     if (playlistGroup) {
         if (showFavoritesGroup) {
@@ -261,6 +273,7 @@ function forceCloseMobileSearchOverlay() {
         return;
     }
     document.body.classList.remove("mobile-search-open");
+    document.body.classList.remove("drawer-open");
     if (dom.searchInput) {
         dom.searchInput.blur();
     }
@@ -272,6 +285,7 @@ function forceCloseMobilePanelOverlay() {
         return;
     }
     document.body.classList.remove("mobile-panel-open");
+    document.body.classList.remove("drawer-open");
     syncMobileOverlayVisibility();
 }
 
@@ -290,6 +304,9 @@ function toggleMobileSearch() {
 }
 
 function openMobilePanel(view = "playlist") {
+    if (document.body) {
+        document.body.classList.add("drawer-open");
+    }
     return invokeMobileHook("openPanel", view);
 }
 
@@ -676,19 +693,6 @@ function preferHttpsUrl(url) {
     }
 }
 
-function toAbsoluteUrl(url) {
-    if (!url) {
-        return "";
-    }
-
-    try {
-        const absolute = new URL(url, window.location.href);
-        return absolute.href;
-    } catch (_) {
-        return url;
-    }
-}
-
 function buildAudioProxyUrl(url) {
     if (!url || typeof url !== "string") return url;
 
@@ -758,7 +762,7 @@ const savedCurrentFavoriteIndex = (() => {
 const savedFavoritePlayMode = (() => {
     const stored = safeGetLocalStorage("favoritePlayMode");
     const normalized = stored === "order" ? "list" : stored;
-    const modes = ["list", "single", "random"];
+    const modes = ["list", "single"];
     return modes.includes(normalized) ? normalized : "list";
 })();
 
@@ -781,7 +785,7 @@ const savedCurrentTrackIndex = (() => {
 
 const savedPlayMode = (() => {
     const stored = safeGetLocalStorage("playMode");
-    const modes = ["list", "single", "random"];
+    const modes = ["list", "single"];
     return modes.includes(stored) ? stored : "list";
 })();
 
@@ -986,6 +990,7 @@ const state = {
     searchSource: savedLastSearchState ? savedLastSearchState.source : savedSearchSource,
     hasMoreResults: typeof savedLastSearchState?.hasMore === "boolean" ? savedLastSearchState.hasMore : true,
     currentSong: savedCurrentSong,
+    playRequestId: 0,
     currentArtworkUrl: null,
     debugMode: false,
     isSearchMode: false, // 新增：搜索模式状态
@@ -1020,6 +1025,8 @@ const state = {
     currentGradient: '',
     isMobileInlineLyricsOpen: false,
     selectedSearchResults: new Set(),
+    selectedPlaylistSongs: new Set(),
+    selectedFavoriteSongs: new Set(),
 };
 
 let importSelectedMenuOutsideHandler = null;
@@ -2703,7 +2710,7 @@ function setPlayMode(mode, { announce = true } = {}) {
 
 // 新增：播放模式切换
 function togglePlayMode() {
-    const modes = isMobileView ? ["list", "single", "random"] : ["list", "single"];
+    const modes = ["list", "single"];
     const currentMode = getActivePlayMode();
     let currentIndex = modes.indexOf(currentMode);
     if (currentIndex === -1) {
@@ -3430,6 +3437,13 @@ function setupInteractions() {
         };
 
         const handleClick = (event) => {
+            const selectButton = event.target.closest("[data-playlist-select]");
+            if (selectButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleLibrarySelection("playlist", Number(selectButton.dataset.index));
+                return;
+            }
             const actionButton = event.target.closest("[data-playlist-action]");
             if (actionButton) {
                 handlePlaylistAction(event, actionButton);
@@ -3523,6 +3537,13 @@ function setupInteractions() {
         };
 
         const handleClick = (event) => {
+            const selectButton = event.target.closest("[data-favorite-select]");
+            if (selectButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleLibrarySelection("favorites", Number(selectButton.dataset.index));
+                return;
+            }
             const actionButton = event.target.closest("[data-favorite-action]");
             if (actionButton) {
                 handleFavoriteAction(event, actionButton);
@@ -3577,6 +3598,7 @@ function setupInteractions() {
         window.clearTimeout(sidePanelHoverTimer);
         const openAction = () => {
             document.body.classList.add("side-panel-open");
+            document.body.classList.add("drawer-open");
             dom.sidePanel.style.pointerEvents = "auto";
             window.requestAnimationFrame(() => {
                 document.body.classList.add("showing");
@@ -3595,6 +3617,7 @@ function setupInteractions() {
         window.clearTimeout(sidePanelHoverTimer);
         const closeAction = () => {
             document.body.classList.remove("showing");
+            document.body.classList.remove("drawer-open");
             window.setTimeout(() => {
                 if (document.body && !document.body.classList.contains("showing")) {
                     document.body.classList.remove("side-panel-open");
@@ -3612,6 +3635,9 @@ function setupInteractions() {
     }
     function switchSideTab(target) {
         const showFavorites = target === "favorites";
+        if (document.body) {
+            document.body.setAttribute("data-mobile-panel-view", showFavorites ? "favorites" : "playlist");
+        }
         if (dom.sidePlaylistTab) {
             dom.sidePlaylistTab.classList.toggle("active", !showFavorites);
             dom.sidePlaylistTab.setAttribute("aria-selected", showFavorites ? "false" : "true");
@@ -3659,6 +3685,7 @@ function setupInteractions() {
         }
     }
     function handleFanItemAction(event) {
+        const selectButton = event.target.closest("[data-fan-select]");
         const actionBtn = event.target.closest("[data-fan-action]");
         const item = event.target.closest(".fan-item");
         if (!item || !(dom.fanPlaylistItems && dom.fanPlaylistItems.contains(item) ||
@@ -3670,12 +3697,19 @@ function setupInteractions() {
             return;
         }
         const listType = item.dataset.fanList;
+        if (selectButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleLibrarySelection(listType === "favorite" ? "favorites" : "playlist", index);
+            return;
+        }
         if (actionBtn) {
             event.preventDefault();
             event.stopPropagation();
             const action = actionBtn.dataset.fanAction;
             if (action === "toggle-favorite") {
-                const song = state.playlistSongs[index];
+                const songs = listType === "favorite" ? ensureFavoriteSongsArray() : state.playlistSongs;
+                const song = songs[index];
                 if (song) {
                     toggleFavorite(song);
                 }
@@ -3740,6 +3774,12 @@ function setupInteractions() {
             dom.sidePanel.addEventListener("mouseleave", () => closeSidePanel(false));
             dom.sidePanel.addEventListener("click", handleFanItemAction);
         }
+        if (!isMobileView && dom.sidePanelCloseBtn) {
+            dom.sidePanelCloseBtn.addEventListener("click", (event) => {
+                event.preventDefault();
+                closeSidePanel(true);
+            });
+        }
         if (dom.sidePlaylistTab) {
             dom.sidePlaylistTab.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -3779,6 +3819,13 @@ function setupInteractions() {
                 performSearch(false, dom.desktopSearchInput);
             });
         }
+        if (dom.mobileSearchSubmit) {
+            dom.mobileSearchSubmit.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                performSearch(true, dom.searchInput);
+            });
+        }
         if (dom.desktopSearchInput) {
             dom.desktopSearchInput.addEventListener("keypress", (e) => {
                 if (e.key === "Enter") {
@@ -3797,6 +3844,7 @@ function setupInteractions() {
                 if (currentInput && state.searchKeyword && state.searchResults.length > 0 && dom.desktopSearchDropdown) {
                     dom.desktopSearchDropdown.removeAttribute("hidden");
                     dom.desktopSearchDropdown.classList.add("is-visible");
+                    document.body.classList.add("drawer-open");
                     restoreSearchResultsList();
                 }
             });
@@ -3812,6 +3860,7 @@ function setupInteractions() {
                         return;
                     }
                     dom.desktopSearch.classList.remove("is-expanded");
+                        document.body.classList.remove("drawer-open");
                 }, 200);
             });
         }
@@ -3903,6 +3952,7 @@ function setupInteractions() {
         if (dom.mobilePlaylistTab) {
             dom.mobilePlaylistTab.addEventListener("click", (e) => {
                 e.preventDefault();
+                document.body.setAttribute("data-mobile-panel-view", "playlist");
                 if (dom.mobilePanel) {
                     dom.mobilePanel.setAttribute("data-mobile-panel-view", "playlist");
                 }
@@ -3913,6 +3963,7 @@ function setupInteractions() {
         if (dom.mobileFavoritesTab) {
             dom.mobileFavoritesTab.addEventListener("click", (e) => {
                 e.preventDefault();
+                document.body.setAttribute("data-mobile-panel-view", "favorites");
                 if (dom.mobilePanel) {
                     dom.mobilePanel.setAttribute("data-mobile-panel-view", "favorites");
                 }
@@ -3926,6 +3977,7 @@ function setupInteractions() {
                 !dom.desktopSearchDropdown.contains(e.target)) {
                 dom.desktopSearchDropdown.classList.remove("is-visible");
                 dom.desktopSearchDropdown.setAttribute("hidden", "");
+                document.body.classList.remove("drawer-open");
             }
         });
     }
@@ -4183,6 +4235,23 @@ function setupInteractions() {
         dom.mobileClearFavoritesBtn.addEventListener("click", clearFavorites);
     }
 
+    const bindLibraryBatchControls = (selectButton, addButton, removeButton) => {
+        if (selectButton) {
+            selectButton.addEventListener("click", () => {
+                const listType = document.body.getAttribute("data-mobile-panel-view") === "favorites" ? "favorites" : "playlist";
+                selectAllLibrarySongs(listType);
+            });
+        }
+        if (addButton) {
+            addButton.addEventListener("click", () => batchLibraryAction("add"));
+        }
+        if (removeButton) {
+            removeButton.addEventListener("click", () => batchLibraryAction("remove"));
+        }
+    };
+    bindLibraryBatchControls(dom.mobileBatchSelectAll, dom.mobileBatchAdd, dom.mobileBatchRemove);
+    bindLibraryBatchControls(dom.sideBatchSelectAllBtn, dom.sideBatchAddBtn, dom.sideBatchRemoveBtn);
+
     if (dom.currentFavoriteToggle) {
         dom.currentFavoriteToggle.addEventListener("click", () => {
             if (!state.currentSong) {
@@ -4260,10 +4329,6 @@ function setupInteractions() {
     if (dom.playModeBtn) {
         dom.playModeBtn.addEventListener("click", togglePlayMode);
     }
-    if (dom.shuffleToggleBtn) {
-        dom.shuffleToggleBtn.addEventListener("click", toggleShuffleMode);
-    }
-
     // 搜索相关事件 - 修复搜索下拉框显示问题
     if (dom.searchBtn) {
         dom.searchBtn.addEventListener("click", (e) => {
@@ -5096,6 +5161,7 @@ function displaySearchResults(newItems, options = {}) {
     if (dom.desktopSearchDropdown) {
         dom.desktopSearchDropdown.removeAttribute("hidden");
         dom.desktopSearchDropdown.classList.add("is-visible");
+        document.body.classList.add("drawer-open");
         renderSearchResultsInto(dom.desktopSearchResultsList, newItems, {
             reset,
             totalCount,
@@ -5547,6 +5613,76 @@ function handleImportPlaylistChange(event) {
     reader.readAsText(file, "utf-8");
 }
 
+function getLibrarySelection(listType) {
+    return listType === "favorites" ? state.selectedFavoriteSongs : state.selectedPlaylistSongs;
+}
+
+function toggleLibrarySelection(listType, index) {
+    const selection = getLibrarySelection(listType);
+    if (selection.has(index)) {
+        selection.delete(index);
+    } else {
+        selection.add(index);
+    }
+    updateLibrarySelectionUI(listType, index);
+}
+
+function updateLibrarySelectionUI(listType, index) {
+    const containers = listType === "favorites"
+        ? [dom.favoriteItems, dom.fanFavoriteItems]
+        : [dom.playlistItems, dom.fanPlaylistItems];
+    containers.filter(Boolean).forEach((container) => {
+        const item = container.querySelector(`[data-index="${index}"]`);
+        if (!item) {
+            return;
+        }
+        const selected = getLibrarySelection(listType).has(index);
+        item.classList.toggle("selected", selected);
+        item.classList.toggle("is-selected", selected);
+        const button = item.querySelector("[data-playlist-select], [data-favorite-select], [data-fan-select]");
+        if (button) {
+            button.setAttribute("aria-pressed", selected ? "true" : "false");
+            button.setAttribute("aria-label", selected ? "取消选择" : "选择歌曲");
+        }
+    });
+}
+
+function selectAllLibrarySongs(listType) {
+    const songs = listType === "favorites" ? ensureFavoriteSongsArray() : state.playlistSongs;
+    const selection = getLibrarySelection(listType);
+    if (selection.size === songs.length) {
+        selection.clear();
+    } else {
+        selection.clear();
+        songs.forEach((song, index) => selection.add(index));
+    }
+    renderPlaylist();
+    renderFavorites();
+}
+
+function batchLibraryAction(action) {
+    const listType = document.body.getAttribute("data-mobile-panel-view") === "favorites" ? "favorites" : "playlist";
+    const selection = getLibrarySelection(listType);
+    const indexes = Array.from(selection).sort((left, right) => right - left);
+    if (indexes.length === 0) {
+        showNotification("请先选择歌曲", "warning");
+        return;
+    }
+    if (action === "add") {
+        const songs = listType === "favorites" ? ensureFavoriteSongsArray() : state.playlistSongs;
+        if (listType === "favorites") {
+            indexes.reverse().forEach((index) => addSongToPlaylist(songs[index]));
+        } else {
+            indexes.reverse().forEach((index) => toggleFavorite(songs[index]));
+        }
+    } else {
+        indexes.forEach((index) => listType === "favorites" ? removeFavoriteAtIndex(index) : removeFromPlaylist(index));
+    }
+    selection.clear();
+    renderPlaylist();
+    renderFavorites();
+}
+
 // 新增：渲染统一播放列表
 function renderPlaylist() {
     if (!dom.playlistItems) return;
@@ -5568,17 +5704,15 @@ function renderPlaylist() {
             ? song.artist.join(", ")
             : (song.artist || "未知艺术家");
         const songKey = getSongKey(song) || `playlist-${index}`;
+        const isSelected = state.selectedPlaylistSongs.has(index);
         return `
-        <div class="playlist-item" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
-            ${song.name} - ${artistValue}
-            <button class="playlist-item-favorite favorite-toggle" type="button" data-playlist-action="favorite" data-index="${index}" data-favorite-key="${songKey}" title="收藏" aria-label="收藏">
-                <i class="fa-regular fa-heart"></i>
+        <div class="playlist-item${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
+            <button class="playlist-item-select" type="button" data-playlist-select="true" data-index="${index}" aria-label="${isSelected ? "取消选择" : "选择歌曲"}" aria-pressed="${isSelected}">
+                <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <button class="playlist-item-download" type="button" data-playlist-action="download" data-index="${index}" title="下载">
-                <i class="fas fa-download"></i>
-            </button>
-            <button class="playlist-item-remove" type="button" data-playlist-action="remove" data-index="${index}" title="从播放列表移除">
-                <i class="fas fa-times"></i>
+            <span class="playlist-item-info"><span class="playlist-item-name">${song.name || "未知歌曲"}</span><span class="playlist-item-artist">${artistValue}</span></span>
+            <button class="playlist-item-favorite favorite-toggle" type="button" data-playlist-action="favorite" data-index="${index}" aria-label="加入收藏" title="加入收藏">
+                <i class="far fa-heart"></i>
             </button>
         </div>`;
     }).join("");
@@ -5601,25 +5735,22 @@ function renderFanPlaylist() {
         return;
     }
     const html = state.playlistSongs.map((song, index) => {
-        const artistValue = Array.isArray(song.artist)
-            ? song.artist.join(", ")
-            : (song.artist || "未知艺术家");
+        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
         const songKey = getSongKey(song) || `playlist-${index}`;
         const isCurrent = state.currentPlaylist === "playlist" && index === state.currentTrackIndex;
-        const trackNo = String(index + 1).padStart(2, "0");
+        const isSelected = state.selectedPlaylistSongs.has(index);
         return `
-        <div class="fan-item${isCurrent ? " is-current" : ""}"
+        <div class="fan-item${isCurrent ? " is-current" : ""}${isSelected ? " is-selected" : ""}"
              data-index="${index}"
              role="button"
              tabindex="0"
              data-fan-list="playlist"
              aria-label="播放 ${song.name}"
              data-favorite-key="${songKey}">
-            <div class="fan-item__no">${trackNo}</div>
-            <div class="fan-item__info">
-                <div class="fan-item__title">${song.name || "未知歌曲"}</div>
-                <div class="fan-item__artist">${artistValue}</div>
-            </div>
+            <button class="fan-item__select" type="button" data-fan-select="true" data-index="${index}" aria-label="选择歌曲" aria-pressed="${isSelected}">
+                <i class="fas fa-check" aria-hidden="true"></i>
+            </button>
+            <span class="fan-item__info"><span class="fan-item__title">${song.name || "未知歌曲"}</span><span class="fan-item__artist">${artistValue}</span></span>
             <button class="fan-item__fav favorite-toggle" type="button"
                     data-favorite-key="${songKey}"
                     data-fan-action="toggle-favorite"
@@ -5627,24 +5758,11 @@ function renderFanPlaylist() {
                     aria-label="收藏" title="收藏">
                 <i class="far fa-heart"></i>
             </button>
-            <button class="fan-item__play" type="button"
-                    data-fan-action="play"
-                    data-index="${index}"
-                    aria-label="播放" title="播放">
-                <i class="fas fa-play"></i>
-            </button>
         </div>`;
     }).join("");
     dom.fanPlaylistItems.innerHTML = html;
     updateFanPlaylistHighlight();
     updateFavoriteIcons();
-    // 渲染完成后触发扇形滚动效果刷新
-    try {
-        document.dispatchEvent(new CustomEvent("fan:refresh"));
-    } catch (e) {}
-    window.setTimeout(() => {
-        try { document.dispatchEvent(new CustomEvent("fan:refresh")); } catch (e) {}
-    }, 60);
 }
 
 function updateFanPlaylistHighlight() {
@@ -5669,49 +5787,33 @@ function renderFanFavorites() {
         return;
     }
     const html = favorites.map((song, index) => {
-        const artistValue = Array.isArray(song.artist)
-            ? song.artist.join(", ")
-            : (song.artist || "未知艺术家");
+        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
         const songKey = getSongKey(song) || `favorite-${index}`;
         const isCurrent = state.currentList === "favorite" && index === state.currentFavoriteIndex;
-        const trackNo = String(index + 1).padStart(2, "0");
+        const isSelected = state.selectedFavoriteSongs.has(index);
         return `
-        <div class="fan-item${isCurrent ? " is-current" : ""}"
+        <div class="fan-item${isCurrent ? " is-current" : ""}${isSelected ? " is-selected" : ""}"
              data-index="${index}"
              role="button"
              tabindex="0"
              data-fan-list="favorite"
              aria-label="播放 ${song.name}"
              data-favorite-key="${songKey}">
-            <div class="fan-item__no">${trackNo}</div>
-            <div class="fan-item__info">
-                <div class="fan-item__title">${song.name || "未知歌曲"}</div>
-                <div class="fan-item__artist">${artistValue}</div>
-            </div>
-            <button class="fan-item__fav" type="button"
-                    data-fan-action="add-to-playlist"
-                    data-index="${index}"
-                    aria-label="添加到播放列表" title="添加到播放列表">
-                <i class="fas fa-plus"></i>
+            <button class="fan-item__select" type="button" data-fan-select="true" data-index="${index}" aria-label="选择歌曲" aria-pressed="${isSelected}">
+                <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <button class="fan-item__play" type="button"
-                    data-fan-action="play-favorite"
+            <span class="fan-item__info"><span class="fan-item__title">${song.name || "未知歌曲"}</span><span class="fan-item__artist">${artistValue}</span></span>
+            <button class="fan-item__fav favorite-toggle" type="button"
+                    data-fan-action="toggle-favorite"
                     data-index="${index}"
-                    aria-label="播放" title="播放">
-                <i class="fas fa-play"></i>
+                    aria-label="加入收藏" title="加入收藏">
+                <i class="far fa-heart"></i>
             </button>
         </div>`;
     }).join("");
     dom.fanFavoriteItems.innerHTML = html;
     updateFanFavoriteHighlight();
     updateFavoriteIcons();
-    // 渲染完成后触发扇形滚动效果刷新
-    try {
-        document.dispatchEvent(new CustomEvent("fan:refresh"));
-    } catch (e) {}
-    window.setTimeout(() => {
-        try { document.dispatchEvent(new CustomEvent("fan:refresh")); } catch (e) {}
-    }, 60);
 }
 
 function updateFanFavoriteHighlight() {
@@ -5980,22 +6082,18 @@ function renderFavorites() {
 
     dom.favorites.classList.remove("empty");
     const favoritesHtml = favorites.map((song, index) => {
-        const artistValue = Array.isArray(song.artist)
-            ? song.artist.join(", ")
-            : (song.artist || "未知艺术家");
+        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
         const isCurrent = state.currentList === "favorite" && index === state.currentFavoriteIndex;
+        const isSelected = state.selectedFavoriteSongs.has(index);
         const songKey = getSongKey(song) || `favorite-${index}`;
         return `
-        <div class="playlist-item${isCurrent ? " current" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
-            ${song.name} - ${artistValue}
-            <button class="favorite-item-action favorite-item-action--add" type="button" data-favorite-action="add" data-index="${index}" title="添加到播放列表" aria-label="添加到播放列表">
-                <i class="fas fa-plus"></i>
+        <div class="playlist-item${isCurrent ? " current" : ""}${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
+            <button class="playlist-item-select" type="button" data-favorite-select="true" data-index="${index}" aria-label="${isSelected ? "取消选择" : "选择歌曲"}" aria-pressed="${isSelected}">
+                <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <button class="favorite-item-action favorite-item-action--download" type="button" data-favorite-action="download" data-index="${index}" title="下载" aria-label="下载">
-                <i class="fas fa-download"></i>
-            </button>
-            <button class="favorite-item-action favorite-item-action--remove" type="button" data-favorite-action="remove" data-index="${index}" title="从收藏列表移除" aria-label="从收藏列表移除">
-                <i class="fas fa-trash"></i>
+            <span class="playlist-item-info"><span class="playlist-item-name">${song.name || "未知歌曲"}</span><span class="playlist-item-artist">${artistValue}</span></span>
+            <button class="playlist-item-favorite favorite-toggle" type="button" data-favorite-action="remove" data-index="${index}" aria-label="取消收藏" title="取消收藏">
+                <i class="fas fa-heart"></i>
             </button>
         </div>`;
     }).join("");
@@ -6446,6 +6544,9 @@ function waitForAudioReady(player) {
 
 async function playSong(song, options = {}) {
     const { autoplay = true, startTime = 0, preserveProgress = false, isRetry = false } = options;
+    const requestId = (state.playRequestId || 0) + 1;
+    state.playRequestId = requestId;
+    const isActiveRequest = () => state.playRequestId === requestId;
 
     window.clearTimeout(pendingPaletteTimer);
     state.audioReadyForPalette = false;
@@ -6455,6 +6556,10 @@ async function playSong(song, options = {}) {
     state.pendingPaletteReady = false;
 
     try {
+        dom.audioPlayer.pause();
+        dom.audioPlayer.removeAttribute("src");
+        dom.audioPlayer.load();
+        clearLyricsContent();
         updateCurrentSongInfo(song, { loadArtwork: false });
 
         const quality = state.playbackQuality || '320';
@@ -6465,6 +6570,10 @@ async function playSong(song, options = {}) {
         debugLog(`获取音频URL: ${audioUrl}`);
 
         const audioData = await API.fetchJson(audioUrl);
+
+        if (!isActiveRequest()) {
+            return false;
+        }
 
         if (!audioData || !audioData.url) {
             throw new Error('无法获取音频播放地址');
@@ -6517,11 +6626,17 @@ async function playSong(song, options = {}) {
         let usedFallbackAudio = false;
 
         for (const candidateUrl of candidateAudioUrls) {
+            if (!isActiveRequest()) {
+                return false;
+            }
             dom.audioPlayer.src = candidateUrl;
             dom.audioPlayer.load();
 
             try {
                 await waitForAudioReady(dom.audioPlayer);
+                if (!isActiveRequest()) {
+                    return false;
+                }
                 selectedAudioUrl = candidateUrl;
                 usedFallbackAudio = candidateUrl !== primaryAudioUrl && candidateAudioUrls.length > 1;
                 break;
@@ -6561,6 +6676,9 @@ async function playSong(song, options = {}) {
             playPromise = dom.audioPlayer.play();
             if (playPromise !== undefined) {
                 playPromise.catch(async error => {
+                    if (!isActiveRequest()) {
+                        return;
+                    }
                     console.error('播放失败:', error);
                     if (!isRetry) {
                         debugLog('音频播放遇到错误，尝试刷新缓存重试...');
@@ -6581,7 +6699,7 @@ async function playSong(song, options = {}) {
             updatePlayPauseButton();
         }
 
-        scheduleDeferredSongAssets(song, playPromise);
+        scheduleDeferredSongAssets(song, playPromise, requestId);
 
         debugLog(`开始播放: ${song.name} @${quality}`);
 
@@ -6589,6 +6707,9 @@ async function playSong(song, options = {}) {
             window.__SOLARA_UPDATE_MEDIA_METADATA();
         }
     } catch (error) {
+        if (!isActiveRequest()) {
+            return false;
+        }
         console.error('播放歌曲失败:', error);
         if (!isRetry) {
             debugLog('播放歌曲失败，尝试刷新缓存重试...', error);
@@ -6596,36 +6717,39 @@ async function playSong(song, options = {}) {
         }
         throw error;
     } finally {
-        savePlayerState();
+        if (isActiveRequest()) {
+            savePlayerState();
+        }
     }
 }
 
-function scheduleDeferredSongAssets(song, playPromise) {
+function scheduleDeferredSongAssets(song, playPromise, requestId) {
+    const isActiveRequest = () => state.playRequestId === requestId && state.currentSong === song;
     const run = () => {
-        if (state.currentSong !== song) {
+        if (!isActiveRequest()) {
             return;
         }
 
         updateCurrentSongInfo(song, { loadArtwork: true });
-        loadLyrics(song);
+        loadLyrics(song, requestId);
         state.audioReadyForPalette = true;
         attemptPaletteApplication();
     };
 
     const kickoff = () => {
-        if (state.currentSong !== song) {
+        if (!isActiveRequest()) {
             return;
         }
 
         if (typeof window.requestAnimationFrame === "function") {
             window.requestAnimationFrame(() => {
-                if (state.currentSong !== song) {
+                if (!isActiveRequest()) {
                     return;
                 }
 
                 if (typeof window.requestIdleCallback === "function") {
                     window.requestIdleCallback(() => {
-                        if (state.currentSong !== song) {
+                        if (!isActiveRequest()) {
                             return;
                         }
                         run();
@@ -6971,12 +7095,17 @@ async function exploreOnlineMusic() {
 }
 
 // 修复：加载歌词
-async function loadLyrics(song) {
+async function loadLyrics(song, requestId = state.playRequestId) {
+    const isActiveRequest = () => state.playRequestId === requestId && state.currentSong === song;
     try {
         const lyricUrl = API.getLyric(song);
         debugLog(`获取歌词URL: ${lyricUrl}`);
 
         const lyricData = await API.fetchJson(lyricUrl);
+
+        if (!isActiveRequest()) {
+            return;
+        }
 
         if (lyricData && lyricData.lyric) {
             parseLyrics(lyricData.lyric);
@@ -6992,6 +7121,9 @@ async function loadLyrics(song) {
             debugLog("歌词加载失败: 无歌词数据");
         }
     } catch (error) {
+        if (!isActiveRequest()) {
+            return;
+        }
         console.error("加载歌词失败:", error);
         setLyricsContentHtml("<div>歌词加载失败</div>");
         dom.lyrics.classList.add("empty");

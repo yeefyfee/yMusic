@@ -233,6 +233,11 @@
                     <span>收藏夹</span>
                 </button>
             </div>
+            <button id="sidePanelCloseBtn" class="side-panel__close" type="button" aria-label="关闭列表" title="关闭列表">
+                <i class="fas fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="side-panel__toolbar">
             <div class="side-panel__actions" id="sidePanelActions">
                 <!-- 播放列表操作 -->
                 <div class="side-actions-group" id="sidePlaylistActions" role="group" aria-label="播放列表操作">
@@ -263,6 +268,17 @@
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
+            </div>
+            <div class="side-panel__batch-actions" aria-label="批量操作">
+                <button class="side-action-btn" id="sideBatchSelectAllBtn" type="button" title="全选" aria-label="全选">
+                    <i class="fas fa-check-double" aria-hidden="true"></i>
+                </button>
+                <button class="side-action-btn" id="sideBatchAddBtn" type="button" title="添加到播放列表" aria-label="添加到播放列表">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                </button>
+                <button class="side-action-btn side-action-btn--clear" id="sideBatchRemoveBtn" type="button" title="批量移除" aria-label="批量移除">
+                    <i class="fas fa-trash" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
 
@@ -353,9 +369,6 @@
                 <button class="transport-btn transport-btn--next" onclick="playNext()" type="button" title="下一曲" aria-label="下一曲">
                     <i class="fas fa-forward-step" aria-hidden="true"></i>
                 </button>
-                <button class="transport-btn transport-btn--shuffle" id="shuffleToggleBtn" type="button" title="随机播放" aria-label="切换随机播放">
-                    <i class="fas fa-shuffle shuffle-icon shuffle-icon--off" aria-hidden="true"></i>
-                </button>
             </div>
             <div class="player-bar__progress">
                 <span class="player-bar__time" id="currentTimeDisplay">00:00</span>
@@ -390,46 +403,18 @@
         </div>
     </div>
 
-    <!-- 移动端：搜索遮罩 -->
+    <!-- 移动端：搜索抽屉 -->
     <div class="mobile-overlay-scrim" id="mobileOverlayScrim"></div>
     <div class="mobile-search-mask" id="mobileSearchMask">
         <div class="mobile-search-panel">
-            <div class="mobile-search-header">
-                <h2 class="mobile-search-title">探索音乐</h2>
-                <button type="button" class="mobile-close-btn" id="mobileSearchClose" aria-label="关闭搜索">
-                    <i class="fas fa-times" aria-hidden="true"></i>
+            <div class="mobile-search-bar">
+                <i class="fas fa-search mobile-search-icon" aria-hidden="true"></i>
+                <input type="text" id="searchInput" class="mobile-search-input" placeholder="搜索歌曲、歌手或专辑…" autocomplete="off" aria-label="搜索输入框">
+                <button id="mobileSearchSubmit" class="mobile-search-submit" type="button" aria-label="执行搜索">
+                    <i class="fas fa-search" aria-hidden="true"></i>
                 </button>
-            </div>
-            <div class="mobile-search-controls">
-                <div class="mobile-search-bar">
-                    <i class="fas fa-search mobile-search-icon" aria-hidden="true"></i>
-                    <input type="text" id="searchInput" class="mobile-search-input" placeholder="搜索歌曲、歌手或专辑…" autocomplete="off" aria-label="搜索输入框">
-                    <button id="mobileSearchSubmit" class="mobile-search-submit" type="button" aria-label="执行搜索">搜索</button>
-                </div>
-                <div class="mobile-search-source">
-                    <button id="mobileSourceSelectBtn" class="source-select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                        <span id="mobileSourceSelectLabel">网易云</span>
-                        <i class="fas fa-chevron-down caret-icon" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="mobile-search-toolbar">
-                <div class="import-dropdown">
-                    <button class="import-selected-btn" id="mobileImportSelectedBtn" disabled>
-                        <i class="fas fa-file-import"></i>
-                        <span>导入已选</span>
-                        <span id="mobileImportSelectedCount" class="import-selected-count"></span>
-                        <i class="fas fa-chevron-down import-dropdown-caret"></i>
-                    </button>
-                </div>
             </div>
             <div class="mobile-search-results" id="mobileSearchResultsList"></div>
-            <div class="mobile-search-pagination">
-                <button class="load-more-btn" id="mobileLoadMoreBtn" hidden>
-                    <i class="fas fa-chevron-down"></i>
-                    <span>加载更多</span>
-                </button>
-            </div>
         </div>
     </div>
 
@@ -455,7 +440,11 @@
                     data-target="favorites"
                 >收藏列表</button>
             </div>
-            <div class="mobile-panel-actions">
+            <button id="mobilePanelClose" class="mobile-close-btn mobile-panel-action-btn" type="button" aria-label="关闭列表" title="关闭列表">
+                <i class="fas fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="mobile-panel-actions">
                 <div class="mobile-actions-group" id="mobilePlaylistActions" role="group" aria-label="播放列表操作">
                     <button id="mobileImportPlaylistBtn" class="mobile-panel-action-btn" type="button" aria-label="导入播放列表" title="导入播放列表">
                         <i class="fas fa-file-import" aria-hidden="true"></i>
@@ -481,10 +470,11 @@
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
-                <button id="mobilePanelClose" class="mobile-close-btn mobile-panel-action-btn" type="button" aria-label="收起播放面板">
-                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
-                </button>
-            </div>
+                <div class="mobile-actions-group mobile-batch-actions" aria-label="批量操作">
+                    <button id="mobileBatchSelectAll" class="mobile-panel-action-btn" type="button" aria-label="全选" title="全选"><i class="fas fa-check-double" aria-hidden="true"></i></button>
+                    <button id="mobileBatchAdd" class="mobile-panel-action-btn" type="button" aria-label="添加到播放列表" title="添加到播放列表"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <button id="mobileBatchRemove" class="mobile-panel-action-btn mobile-panel-clear-btn" type="button" aria-label="批量移除" title="批量移除"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                </div>
         </div>
         <div class="playlist active empty" id="playlist" role="tabpanel" aria-labelledby="playlistTab">
             <div class="playlist-scroll">

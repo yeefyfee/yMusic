@@ -151,18 +151,10 @@
 
         updateMobileToolbarTitleImpl();
 
-        if (dom.mobileSearchToggle) {
-            dom.mobileSearchToggle.addEventListener("click", toggleMobileSearchImpl);
-        }
-        if (dom.mobileSearchClose) {
-            dom.mobileSearchClose.addEventListener("click", closeMobileSearchImpl);
-        }
-        if (dom.mobilePanelClose) {
-            dom.mobilePanelClose.addEventListener("click", closeMobilePanelImpl);
-        }
-        if (dom.mobileQueueToggle) {
-            dom.mobileQueueToggle.addEventListener("click", () => openMobilePanelImpl("playlist"));
-        }
+        // 注意：搜索/面板打开关闭按钮的事件绑定由 index.js 统一通过
+        // SolaraMobileBridge 的 handlers 驱动（openSearch/closeSearch/openPanel/closePanel），
+        // 这里不再重复直接绑定，避免与 index.js 的 onclick 处理器叠加导致"打开后立刻被关闭"。
+
         const handleGlobalPointerDown = (event) => {
             if (!document.body) {
                 return;

@@ -49,7 +49,7 @@
     --lyrics-next: rgba(255, 255, 255, 0.46);
 
     /* 播放器药丸 */
-    --player-bar-h: 82px;
+    --player-bar-h: 92px;
     --player-bar-bg: rgba(15, 17, 28, 0.82);
     --player-bar-border: rgba(255, 255, 255, 0.08);
     --player-bar-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -1002,10 +1002,10 @@ body.background-transitioning .background-stage__layer--transition {
     inset: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 0;
-    padding: 18% 0;
+    padding: 31vh 0;
     transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
 }
@@ -1061,25 +1061,8 @@ body.background-transitioning .background-stage__layer--transition {
     letter-spacing: 0.06em;
     padding: 24px 32px;
     line-height: 1.4;
-    background: linear-gradient(135deg, rgba(139, 143, 252, 0.12), rgba(229, 138, 176, 0.08), rgba(56, 189, 248, 0.06));
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     width: 100%;
     max-width: 100%;
-    position: relative;
-}
-
-.lyrics-stage__content > div.current::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: 18px;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(139, 143, 252, 0.4), transparent 50%, rgba(229, 138, 176, 0.3));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
 }
 
 /* 空状态提示 */
@@ -1112,8 +1095,8 @@ body.background-transitioning .background-stage__layer--transition {
     right: 0;
     bottom: 18px;
     z-index: 300;
-    height: 60px;
-    width: 960px;
+    height: 72px;
+    width: 1160px;
     max-width: calc(100vw - 24px);
     margin: 0 auto;
     min-width: 0;
@@ -1124,10 +1107,10 @@ body.background-transitioning .background-stage__layer--transition {
     border-radius: 999px;
     box-shadow: 0 10px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.06);
     display: grid;
-    grid-template-columns: 160px 1fr 260px;
+    grid-template-columns: 200px 1fr 320px;
     align-items: center;
-    gap: 10px;
-    padding: 0 16px;
+    gap: 12px;
+    padding: 0 20px;
     color-scheme: dark;
     overflow: hidden;
 }
@@ -1141,9 +1124,9 @@ body.background-transitioning .background-stage__layer--transition {
 }
 
 .player-bar__cover {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
     flex-shrink: 0;
     overflow: hidden;
     box-shadow: 0 4px 14px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
@@ -1211,8 +1194,8 @@ body.background-transitioning .background-stage__layer--transition {
 }
 
 .transport-btn {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: var(--radius-full);
     border: none;
     background: transparent;
@@ -1223,7 +1206,7 @@ body.background-transitioning .background-stage__layer--transition {
     justify-content: center;
     transition: all var(--dur-fast) var(--ease-smooth);
     flex-shrink: 0;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .transport-btn:hover {
@@ -1249,11 +1232,11 @@ body.background-transitioning .background-stage__layer--transition {
 }
 
 .transport-btn--play {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
     background: linear-gradient(135deg, var(--primary-color), var(--accent-pink));
     color: var(--text-on-primary);
-    font-size: 14px;
+    font-size: 17px;
     box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35);
 }
 
@@ -1290,14 +1273,14 @@ body.background-transitioning .background-stage__layer--transition {
     align-items: center;
     gap: 6px;
     width: 100%;
-    max-width: 480px;
+    max-width: 560px;
 }
 
 .player-bar__time {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-tertiary);
     font-variant-numeric: tabular-nums;
-    min-width: 32px;
+    min-width: 36px;
     text-align: center;
     flex-shrink: 0;
 }
@@ -1759,6 +1742,10 @@ body.side-panel-open .side-panel {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.side-actions-group[hidden] {
+    display: none !important;
 }
 
 .side-action-btn {

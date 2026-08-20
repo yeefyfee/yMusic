@@ -55,6 +55,7 @@ const dom = {
     qualityLabel: document.getElementById("qualityLabel"),
     mobileToolbarTitle: document.getElementById("mobileToolbarTitle"),
     mobileSearchToggle: document.getElementById("mobileSearchToggle"),
+    mobileQueueTopBtn: document.getElementById("mobileQueueTopBtn"),
     mobileSearchClose: document.getElementById("mobileSearchClose"),
     mobilePanelClose: document.getElementById("mobilePanelClose"),
     mobileClearPlaylistBtn: document.getElementById("mobileClearPlaylistBtn"),
@@ -3063,7 +3064,7 @@ function buildQualityMenu() {
     const optionsHtml = QUALITY_OPTIONS.map(option => {
         const isActive = option.value === state.playbackQuality;
         return `
-            <div class="player-quality-option${isActive ? " active" : ""}" data-quality="${option.value}">
+            <div class="quality-option${isActive ? " active" : ""}" data-quality="${option.value}">
                 <span>${option.label}</span>
                 <small>${option.description}</small>
             </div>
@@ -3291,7 +3292,7 @@ function closePlayerQualityMenu() {
 }
 
 function handlePlayerQualitySelection(event) {
-    const option = event.target.closest(".player-quality-option");
+    const option = event.target.closest(".quality-option");
     if (!option) return;
     event.preventDefault();
     event.stopPropagation();
@@ -3629,6 +3630,25 @@ function setupInteractions() {
                 dom.favoritesFanTrack.setAttribute("hidden", "");
             }
         }
+        // 根据列表类型切换头部操作按钮组
+        if (dom.sidePlaylistActions) {
+            if (showFavorites) {
+                dom.sidePlaylistActions.setAttribute("hidden", "");
+                dom.sidePlaylistActions.setAttribute("aria-hidden", "true");
+            } else {
+                dom.sidePlaylistActions.removeAttribute("hidden");
+                dom.sidePlaylistActions.setAttribute("aria-hidden", "false");
+            }
+        }
+        if (dom.sideFavoritesActions) {
+            if (showFavorites) {
+                dom.sideFavoritesActions.removeAttribute("hidden");
+                dom.sideFavoritesActions.setAttribute("aria-hidden", "false");
+            } else {
+                dom.sideFavoritesActions.setAttribute("hidden", "");
+                dom.sideFavoritesActions.setAttribute("aria-hidden", "true");
+            }
+        }
     }
     function handleFanItemAction(event) {
         const actionBtn = event.target.closest("[data-fan-action]");
@@ -3732,6 +3752,14 @@ function setupInteractions() {
                 openMobilePanel("playlist");
             });
         }
+        // 移动端：顶部工具栏播放列表按钮
+        if (isMobileView && dom.mobileQueueTopBtn) {
+            dom.mobileQueueTopBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openMobilePanel("playlist");
+            });
+        }
     }
 
     function initializeDesktopSearchHandlers() {
@@ -3764,14 +3792,18 @@ function setupInteractions() {
                     restoreSearchResultsList();
                 }
             });
-            // 失焦时，如果没有搜索结果和关键词，自动收起搜索栏
-            dom.desktopSearchInput.addEventListener("blur", () => {
+            // 失焦时：若焦点移出整个搜索区域（含下拉/源选择/按钮），则收起搜索栏并隐藏按钮
+            dom.desktopSearchInput.addEventListener("blur", (event) => {
+                const next = event.relatedTarget;
+                const withinSearch = next && dom.desktopSearch && dom.desktopSearch.contains(next);
+                if (withinSearch) {
+                    return;
+                }
                 setTimeout(() => {
-                    const hasResults = state.searchResults && state.searchResults.length > 0;
-                    const hasKeyword = dom.desktopSearchInput.value.trim().length > 0;
-                    if (dom.desktopSearch && !hasResults && !hasKeyword) {
-                        dom.desktopSearch.classList.remove("is-expanded");
+                    if (!dom.desktopSearch) {
+                        return;
                     }
+                    dom.desktopSearch.classList.remove("is-expanded");
                 }, 200);
             });
         }
@@ -4245,8 +4277,11 @@ function setupInteractions() {
 
     updateImportSelectedButton();
 
-    // 修复：点击搜索区域外部时隐藏搜索结果
+    // 修复：点击搜索区域外部时隐藏搜索结果（仅桌面端；移动端由遮罩/关闭按钮管理）
     document.addEventListener("click", (e) => {
+        if (isMobileView) {
+            return;
+        }
         const searchArea = dom.searchArea;
         if (searchArea && !searchArea.contains(e.target) && state.isSearchMode) {
             debugLog("点击搜索区域外部，隐藏搜索结果");
@@ -7066,7 +7101,7 @@ function syncLyrics() {
             elements.forEach((element, index) => {
                 if (index === currentIndex) {
                     element.classList.add("current");
-                    const shouldScroll = !state.userScrolledLyrics && (!inline || state.isMobileInlineLyricsOpen);
+                    const shouldScroll = !state.userScrolledLyrics;
                     if (shouldScroll) {
                         scrollToCurrentLyric(element, container);
                     }

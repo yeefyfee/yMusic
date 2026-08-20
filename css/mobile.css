@@ -64,7 +64,7 @@ body.mobile-view .background-stage {
 
 /* ---------- 移动端：全屏专辑背景（增强版） ---------- */
 body.mobile-view .album-bg {
-    z-index: -3;
+    z-index: 0;
 }
 
 body.mobile-view .album-bg__image {
@@ -259,9 +259,9 @@ body.mobile-view .mobile-stage__lyrics-content {
     inset: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding: 24px 18px;
+    padding: 19vh 18px;
     gap: 0;
     overflow-y: auto;
     overflow-x: hidden;

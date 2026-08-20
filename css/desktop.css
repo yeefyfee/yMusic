@@ -58,8 +58,8 @@ html.desktop-view .lyrics-stage {
     }
 }
 
-/* ---------- 桌面端：搜索栏最大宽度限制 ---------- */
-html.desktop-view .desktop-search {
+/* ---------- 桌面端：搜索栏收起宽度（展开态由 style.css 的 .is-expanded 控制） ---------- */
+html.desktop-view .desktop-search:not(.is-expanded) {
     width: 220px;
 }
 
@@ -103,46 +103,46 @@ html.desktop-view .fan-item.highlighted {
 /* ---------- 桌面端：播放器药丸响应式 ---------- */
 @media screen and (max-width: 1400px) {
     html.desktop-view .player-bar {
-        width: 880px;
+        width: 1000px;
     }
 }
 
 @media screen and (max-width: 1280px) {
     html.desktop-view .player-bar {
-        width: 780px;
-        grid-template-columns: 160px 1fr 240px;
-        gap: 10px;
+        width: 880px;
+        grid-template-columns: 160px 1fr 260px;
+        gap: 12px;
     }
 }
 
 @media screen and (max-width: 1150px) {
     html.desktop-view .player-bar {
-        width: 680px;
-        grid-template-columns: 140px 1fr 200px;
+        width: 780px;
+        grid-template-columns: 150px 1fr 210px;
         gap: 8px;
         padding: 0 16px;
     }
 
     html.desktop-view .volume-slider {
-        width: 50px;
+        width: 60px;
     }
 }
 
 @media screen and (max-width: 1024px) {
     html.desktop-view .player-bar {
-        width: 580px;
-        grid-template-columns: 120px 1fr 160px;
-        height: 60px;
+        width: 660px;
+        grid-template-columns: 120px 1fr 170px;
+        height: 66px;
         gap: 8px;
-        padding: 0 12px;
+        padding: 0 14px;
     }
 
     html.desktop-view .player-bar__song-title {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     html.desktop-view .player-bar__song-artist {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     html.desktop-view .quality-btn span,
@@ -151,15 +151,15 @@ html.desktop-view .fan-item.highlighted {
     }
 
     html.desktop-view .transport-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
     }
 
     html.desktop-view .transport-btn--play {
-        width: 38px;
-        height: 38px;
-        font-size: 13px;
+        width: 42px;
+        height: 42px;
+        font-size: 15px;
     }
 
     html.desktop-view .player-bar__transport {
@@ -172,8 +172,8 @@ html.desktop-view .fan-item.highlighted {
         width: calc(100vw - 24px);
         grid-template-columns: 120px 1fr auto;
         gap: 8px;
-        height: 62px;
-        padding: 0 12px;
+        height: 66px;
+        padding: 0 14px;
     }
 
     html.desktop-view .player-bar__quality,

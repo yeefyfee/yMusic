@@ -98,7 +98,8 @@ async function proxyApiRequest(url: URL, request: Request, waitUntil?: (promise:
 
   // 如果是 GET 请求且未指定 nocache 强制刷新，尝试命中缓存
   const bypassCache = url.searchParams.get("nocache") === "true";
-  if (request.method === "GET" && !bypassCache) {
+  const isAudioUrl = url.searchParams.get("types") === "url";
+  if (request.method === "GET" && !bypassCache && !isAudioUrl) {
     try {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
@@ -148,7 +149,7 @@ async function proxyApiRequest(url: URL, request: Request, waitUntil?: (promise:
   const isEmptyResult = responseText.trim() === "[]";
   const isError = responseText.includes('"error"') || responseText.includes('"status":0');
   
-  let shouldCache = upstream.status === 200 && request.method === "GET" && !isError && !bypassCache;
+  let shouldCache = upstream.status === 200 && request.method === "GET" && !isError && !bypassCache && !isAudioUrl;
   
   // 如果是搜索请求且结果为空，通常是 API 繁忙或异常，不建议长缓存
   if (isSearch && isEmptyResult) {

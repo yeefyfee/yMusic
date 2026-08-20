@@ -958,7 +958,8 @@ const API = {
 
     getSongUrl: (song, quality = "320") => {
         const signature = API.generateSignature();
-        return `${API.baseUrl}?types=url&id=${song.id}&source=${song.source || "netease"}&br=${quality}&s=${signature}`;
+        const songId = song && (song.id ?? song.url_id ?? song.songmid ?? song.mid);
+        return `${API.baseUrl}?types=url&id=${encodeURIComponent(songId ?? "")}&source=${encodeURIComponent(song?.source || "netease")}&br=${quality}&s=${signature}`;
     },
 
     getLyric: (song) => {
@@ -6546,6 +6547,19 @@ function waitForAudioReady(player) {
     });
 }
 
+function extractAudioUrl(audioData) {
+    if (!audioData || typeof audioData !== "object") {
+        return null;
+    }
+    const candidates = [
+        audioData.url,
+        audioData.data?.url,
+        audioData.data?.audioUrl,
+        audioData.audioUrl,
+    ];
+    return candidates.find((url) => typeof url === "string" && url.trim() !== "")?.trim() || null;
+}
+
 async function playSong(song, options = {}) {
     const { autoplay = true, startTime = 0, preserveProgress = false, isRetry = false } = options;
     const requestId = (state.playRequestId || 0) + 1;
@@ -6579,11 +6593,14 @@ async function playSong(song, options = {}) {
             return false;
         }
 
-        if (!audioData || !audioData.url) {
-            throw new Error('无法获取音频播放地址');
+        const originalAudioUrl = extractAudioUrl(audioData);
+        if (!originalAudioUrl) {
+            const apiError = audioData && typeof audioData === "object"
+                ? (audioData.error || audioData.message || audioData.msg)
+                : null;
+            throw new Error(apiError ? `无法获取音频播放地址: ${apiError}` : '无法获取音频播放地址');
         }
 
-        const originalAudioUrl = audioData.url;
         const proxiedAudioUrl = buildAudioProxyUrl(originalAudioUrl);
         const preferredAudioUrl = preferHttpsUrl(originalAudioUrl);
         const candidateAudioUrls = Array.from(

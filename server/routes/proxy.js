@@ -91,9 +91,10 @@ async function proxyApiRequest(reqUrl, req, res) {
   const cacheKey = buildCacheKey(reqUrl);
   const parsedReq = new URL(reqUrl);
   const bypassCache = parsedReq.searchParams.get('nocache') === 'true';
+  const isAudioUrl = parsedReq.searchParams.get('types') === 'url';
 
   // ── Cache HIT ──────────────────────────────────────────────────────────────
-  if (!bypassCache) {
+  if (!bypassCache && !isAudioUrl) {
     const cached = cache.get(cacheKey);
     if (cached) {
       console.log(`[Cache HIT] ${reqUrl}`);
@@ -165,7 +166,7 @@ async function proxyApiRequest(reqUrl, req, res) {
   const isEmptyResult = responseText.trim() === '[]';
   const isError = responseText.includes('"error"') || responseText.includes('"status":0');
 
-  let shouldCache = upstream.status === 200 && !isError && !bypassCache;
+  let shouldCache = upstream.status === 200 && !isError && !bypassCache && !isAudioUrl;
   if (isSearch && isEmptyResult) shouldCache = false;
 
   if (shouldCache) {

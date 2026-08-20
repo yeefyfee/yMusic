@@ -109,6 +109,9 @@ body.mobile-view .mobile-toolbar {
 }
 
 body.mobile-view .mobile-toolbar__title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 15px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.92);
@@ -423,7 +426,7 @@ body.mobile-view.mobile-panel-open .mobile-overlay-scrim {
 
 /* ---------- 移动端：底部抽屉式搜索（二级菜单） ---------- */
 body.mobile-view .mobile-search-mask {
-    display: flex;
+    display: none;
     position: fixed;
     left: 0;
     right: 0;
@@ -448,6 +451,7 @@ body.mobile-view .mobile-search-mask {
 }
 
 body.mobile-view.mobile-search-open .mobile-search-mask {
+    display: flex;
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
@@ -723,12 +727,24 @@ body.mobile-view .player-bar__transport {
 
 body.mobile-view .transport-btn--mode {
     position: absolute;
-    top: 50%;
-    right: 0;
+    top: 14px;
+    right: 16px;
     width: 36px;
     height: 36px;
-    transform: translateY(-50%);
     font-size: 14px;
+}
+
+body.mobile-view .transport-btn--fav {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+}
+
+body.mobile-view .player-bar__transport {
+    position: static;
 }
 
 body.mobile-view .transport-btn {
@@ -744,7 +760,22 @@ body.mobile-view .transport-btn:active {
 }
 
 body.mobile-view .transport-btn--mode:active {
-    transform: translateY(-50%) scale(0.92);
+    transform: scale(0.92);
+}
+
+body.mobile-view .mobile-search-close {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.82);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
 }
 
 body.mobile-view .transport-btn--play {
@@ -771,7 +802,7 @@ body.mobile-view .player-bar__time {
 
 /* ---------- 移动端：底部抽屉式播放列表 ---------- */
 body.mobile-view .mobile-panel {
-    display: flex;
+    display: none;
     position: fixed;
     left: 0;
     right: 0;
@@ -798,6 +829,7 @@ body.mobile-view .mobile-panel {
 }
 
 body.mobile-view.mobile-panel-open .mobile-panel {
+    display: flex;
     transform: translateY(0);
 }
 

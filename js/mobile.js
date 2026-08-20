@@ -137,7 +137,6 @@
         initialized = true;
 
         document.body.classList.add("mobile-view");
-        document.body.classList.add("mobile-panel-open", "drawer-open");
         const initialView = "playlist";
         document.body.setAttribute("data-mobile-panel-view", initialView);
         if (dom.mobilePanelTitle) {

@@ -22,6 +22,10 @@ html.desktop-view .transport-btn--queue {
     display: none;
 }
 
+html.desktop-view #mobileFavoriteToggle {
+    display: none;
+}
+
 /* ---------- 桌面端：扇形面板 hover 触发区域宽度微调 ---------- */
 html.desktop-view .side-panel-trigger {
     width: 60px;

@@ -327,9 +327,6 @@
         <div class="mobile-stage__song-info">
             <div class="mobile-stage__title-row">
                 <span class="mobile-stage__title" id="mobileSongTitle">选择一首歌曲开始播放</span>
-                <button class="favorite-toggle current-favorite-btn" id="mobileFavoriteToggle" type="button" aria-label="收藏当前歌曲">
-                    <i class="far fa-heart" aria-hidden="true"></i>
-                </button>
             </div>
             <div class="mobile-stage__artist" id="mobileSongArtist">未知艺术家</div>
         </div>
@@ -357,6 +354,9 @@
         <!-- 中：播放控制 + 进度 -->
         <div class="player-bar__center">
             <div class="player-bar__transport">
+                <button class="transport-btn transport-btn--fav favorite-toggle current-favorite-btn" id="mobileFavoriteToggle" type="button" aria-label="收藏当前歌曲" title="收藏当前歌曲">
+                    <i class="far fa-heart" aria-hidden="true"></i>
+                </button>
                 <button class="transport-btn transport-btn--mode" id="playModeBtn" type="button" title="播放模式" aria-label="播放模式">
                     <i class="fas fa-repeat" aria-hidden="true"></i>
                 </button>
@@ -412,6 +412,9 @@
                 <input type="text" id="searchInput" class="mobile-search-input" placeholder="搜索歌曲、歌手或专辑…" autocomplete="off" aria-label="搜索输入框">
                 <button id="mobileSearchSubmit" class="mobile-search-submit" type="button" aria-label="执行搜索">
                     <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
+                <button id="mobileSearchClose" class="mobile-search-close" type="button" aria-label="关闭搜索" title="关闭搜索">
+                    <i class="fas fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="mobile-search-results" id="mobileSearchResultsList"></div>

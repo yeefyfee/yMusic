@@ -4341,6 +4341,9 @@ function setupInteractions() {
 
     if (dom.searchInput) {
         dom.searchInput.addEventListener("focus", () => {
+            if (isMobileView) {
+                return;
+            }
             debugLog("搜索输入框获得焦点，尝试恢复上次搜索结果");
             handleSearchInputFocus();
         });
@@ -7035,16 +7038,26 @@ async function exploreOnlineMusic() {
             return;
         }
 
-        const normalizedSongs = results.map((song) => ({
-            id: song.id,
-            name: song.name,
-            artist: Array.isArray(song.artist) ? song.artist.join(" / ") : (song.artist || "未知艺术家"),
-            album: song.album || "",
-            source: song.source || source,
-            lyric_id: song.lyric_id || song.id,
-            pic_id: song.pic_id || song.pic || "",
-            url_id: song.url_id,
-        }));
+        const normalizedSongs = results
+            .map((song) => {
+                if (!song || typeof song !== "object") {
+                    return null;
+                }
+                const sourceId = song.id ?? song.songId ?? song.songid ?? song.url_id;
+                const normalized = sanitizeImportedSong({
+                    ...song,
+                    id: sourceId,
+                    source,
+                    lyric_id: song.lyric_id || sourceId,
+                    pic_id: song.pic_id || song.pic || "",
+                });
+                if (!normalized || !resolveSongId(normalized)) {
+                    return null;
+                }
+                normalized.source = source;
+                return normalized;
+            })
+            .filter(Boolean);
 
         const existingSongs = Array.isArray(state.playlistSongs) ? state.playlistSongs.slice() : [];
         const existingKeys = new Set(existingSongs

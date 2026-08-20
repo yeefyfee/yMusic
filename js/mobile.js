@@ -15,7 +15,7 @@
         if (!dom.mobileToolbarTitle) {
             return;
         }
-        dom.mobileToolbarTitle.textContent = "Solara";
+        dom.mobileToolbarTitle.innerHTML = "<span>Solara</span><small>© Theo</small>";
     }
 
     function updateMobileOverlayScrim() {

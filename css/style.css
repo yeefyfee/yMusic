@@ -97,7 +97,34 @@
 
 /* 浅色模式占位 - 保持统一暗色主题 */
 .dark-mode {
-    /* 与默认一致 */
+    --bg-base: #090a0f;
+    --bg-overlay: rgba(9, 10, 15, 0.82);
+    --bg-vignette: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.72) 100%);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-bg-strong: rgba(255, 255, 255, 0.09);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-strong: rgba(255, 255, 255, 0.14);
+    --text-primary: rgba(255, 255, 255, 0.96);
+    --text-secondary: rgba(255, 255, 255, 0.72);
+    --text-tertiary: rgba(255, 255, 255, 0.46);
+    --lyrics-normal: rgba(255, 255, 255, 0.34);
+    --lyrics-passed: rgba(255, 255, 255, 0.52);
+    --lyrics-current: #ffffff;
+    --player-bar-bg: rgba(15, 17, 28, 0.82);
+    --player-bar-border: rgba(255, 255, 255, 0.08);
+    --player-bar-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    --search-result-bg: rgba(14, 15, 22, 0.97);
+    --search-result-hover: rgba(255, 255, 255, 0.045);
+    --search-result-selected: rgba(255, 255, 255, 0.08);
+    --item-hover-bg: rgba(255, 255, 255, 0.045);
+    --item-current-bg: rgba(139, 143, 252, 0.14);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+    --fan-bg: rgba(11, 12, 18, 0.9);
+    --fan-item-bg: rgba(255, 255, 255, 0.045);
+    --fan-item-hover: rgba(255, 255, 255, 0.07);
+    --fan-item-current: rgba(139, 143, 252, 0.16);
+    --shadow-soft: 0 8px 28px rgba(0,0,0,0.3);
+    --shadow-strong: 0 20px 60px rgba(0,0,0,0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1556,6 +1583,7 @@ body.background-transitioning .background-stage__layer--transition {
     border-radius: 999px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
     padding: 10px 16px;
+    z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px) scale(0.9);
@@ -1926,8 +1954,7 @@ body.side-panel-open .side-panel {
 }
 
 .fan-item__no,
-.fan-item__info,
-.fan-item__play {
+.fan-item__info {
     display: none !important;
 }
 
@@ -2043,7 +2070,7 @@ body.side-panel-open .side-panel {
 
 /* 新版列表只保留选择、歌名和收藏 */
 .fan-item__no,
-.fan-item__play {
+.fan-item__no {
     display: none !important;
 }
 

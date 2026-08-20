@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a0f">
     <title>Solara</title>
     <meta name="apple-mobile-web-app-title" content="Solara">
@@ -168,10 +169,6 @@
         <button id="toggleSidePanelBtn" class="theme-toggle-button" type="button" aria-label="播放列表" title="播放列表">
             <i class="fas fa-list" aria-hidden="true"></i>
         </button>
-        <button id="themeToggleButton" class="theme-toggle-button" type="button" aria-label="切换深浅色模式">
-            <i class="fas fa-sun theme-icon theme-icon--sun" aria-hidden="true"></i>
-            <i class="fas fa-moon theme-icon theme-icon--moon" aria-hidden="true"></i>
-        </button>
         <button id="openSettingsBtn" class="theme-toggle-button" type="button" aria-label="设置" title="设置">
             <i class="fas fa-cog" aria-hidden="true"></i>
         </button>
@@ -301,7 +298,10 @@
         <button class="mobile-toolbar__button" id="mobileExploreButton" type="button" aria-label="探索雷达">
             <i class="fas fa-satellite-dish" aria-hidden="true"></i>
         </button>
-        <div class="mobile-toolbar__title" id="mobileToolbarTitle">Solara</div>
+        <div class="mobile-toolbar__title" id="mobileToolbarTitle">
+            <span>Solara</span>
+            <small>© Theo</small>
+        </div>
         <div class="mobile-toolbar__actions">
             <button class="mobile-toolbar__button" id="mobileQueueTopBtn" type="button" aria-label="播放列表" title="播放列表">
                 <i class="fas fa-bars" aria-hidden="true"></i>
@@ -354,12 +354,6 @@
         <!-- 中：播放控制 + 进度 -->
         <div class="player-bar__center">
             <div class="player-bar__transport">
-                <button class="transport-btn transport-btn--fav favorite-toggle current-favorite-btn" id="mobileFavoriteToggle" type="button" aria-label="收藏当前歌曲" title="收藏当前歌曲">
-                    <i class="far fa-heart" aria-hidden="true"></i>
-                </button>
-                <button class="transport-btn transport-btn--mode" id="playModeBtn" type="button" title="播放模式" aria-label="播放模式">
-                    <i class="fas fa-repeat" aria-hidden="true"></i>
-                </button>
                 <button class="transport-btn transport-btn--prev" onclick="playPrevious()" type="button" title="上一曲" aria-label="上一曲">
                     <i class="fas fa-backward-step" aria-hidden="true"></i>
                 </button>
@@ -381,6 +375,9 @@
         <div class="player-bar__right">
             <button class="transport-btn transport-btn--fav" id="playerBarFavBtn" type="button" title="收藏当前歌曲" aria-label="收藏当前歌曲">
                 <i class="far fa-heart" aria-hidden="true"></i>
+            </button>
+            <button class="transport-btn transport-btn--mode" id="playModeBtn" type="button" title="播放模式" aria-label="播放模式">
+                <i class="fas fa-repeat" aria-hidden="true"></i>
             </button>
             <div class="player-bar__quality">
                 <button id="qualityToggle" class="quality-btn" type="button" aria-haspopup="true" aria-expanded="false">

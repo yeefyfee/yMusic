@@ -14,7 +14,6 @@ const dom = {
     mobileInlineLyricsScroll: document.getElementById("mobileInlineLyricsContent"),
     mobileInlineLyricsContent: document.getElementById("mobileInlineLyricsContent"),
     audioPlayer: document.getElementById("audioPlayer"),
-    themeToggleButton: document.getElementById("themeToggleButton"),
     loadOnlineBtn: document.getElementById("loadOnlineBtn"),
     showPlaylistBtn: null,
     showLyricsBtn: null,
@@ -139,7 +138,6 @@ const dom = {
     mobileInlineLyricsContentEl: document.getElementById("mobileInlineLyricsContent"),
     mobileSongTitle: document.getElementById("mobileSongTitle"),
     mobileSongArtist: document.getElementById("mobileSongArtist"),
-    mobileFavoriteToggle: document.getElementById("mobileFavoriteToggle"),
     // 移动端 - 搜索遮罩
     mobileSearchMask: document.getElementById("mobileSearchMask"),
     mobileSearchSubmit: document.getElementById("mobileSearchSubmit"),
@@ -3990,40 +3988,19 @@ function setupInteractions() {
         // 扇形效果已移除，列表现为普通滚动列表
     }
 
-    function initializeMobileFavoriteToggle() {
-        if (dom.mobileFavoriteToggle) {
-            dom.mobileFavoriteToggle.addEventListener("click", () => {
-                if (!state.currentSong) {
-                    return;
-                }
-                toggleFavorite(state.currentSong);
-            });
-        }
-    }
-
     function applyTheme(isDark) {
         if (!state.themeDefaultsCaptured) {
             captureThemeDefaults();
         }
         document.body.classList.toggle("dark-mode", isDark);
-        dom.themeToggleButton.classList.toggle("is-dark", isDark);
         const label = isDark ? "切换为浅色模式" : "切换为深色模式";
-        dom.themeToggleButton.setAttribute("aria-label", label);
-        dom.themeToggleButton.setAttribute("title", label);
         applyDynamicGradient();
     }
 
     captureThemeDefaults();
     const savedTheme = safeGetLocalStorage("theme");
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialIsDark = savedTheme ? savedTheme === "dark" : prefersDark;
+    const initialIsDark = true;
     applyTheme(initialIsDark);
-
-    dom.themeToggleButton.addEventListener("click", () => {
-        const isDark = !document.body.classList.contains("dark-mode");
-        applyTheme(isDark);
-        safeSetLocalStorage("theme", isDark ? "dark" : "light");
-    });
 
     dom.audioPlayer.volume = state.volume;
     dom.volumeSlider.value = state.volume;
@@ -4039,7 +4016,6 @@ function setupInteractions() {
     initializeSidePanelHandlers();
     initializeDesktopSearchHandlers();
     initializeFanScrollEffects();
-    initializeMobileFavoriteToggle();
     updateQualityLabel();
     updatePlayPauseButton();
     const initialTime = state.currentList === "favorite"
@@ -5761,6 +5737,9 @@ function renderFanPlaylist() {
                     aria-label="收藏" title="收藏">
                 <i class="far fa-heart"></i>
             </button>
+            <button class="fan-item__play" type="button" data-fan-action="play" data-index="${index}" aria-label="播放" title="播放">
+                <i class="fas fa-play" aria-hidden="true"></i>
+            </button>
         </div>`;
     }).join("");
     dom.fanPlaylistItems.innerHTML = html;
@@ -5811,6 +5790,9 @@ function renderFanFavorites() {
                     data-index="${index}"
                     aria-label="加入收藏" title="加入收藏">
                 <i class="far fa-heart"></i>
+            </button>
+            <button class="fan-item__play" type="button" data-fan-action="play-favorite" data-index="${index}" aria-label="播放" title="播放">
+                <i class="fas fa-play" aria-hidden="true"></i>
             </button>
         </div>`;
     }).join("");
@@ -7044,17 +7026,21 @@ async function exploreOnlineMusic() {
                     return null;
                 }
                 const sourceId = song.id ?? song.songId ?? song.songid ?? song.url_id;
+                const candidateSource = song.source || song.platform || "";
+                const resultSource = SOURCE_OPTIONS.some((option) => option.value === candidateSource)
+                    ? candidateSource
+                    : source;
                 const normalized = sanitizeImportedSong({
                     ...song,
                     id: sourceId,
-                    source,
+                    source: resultSource,
                     lyric_id: song.lyric_id || sourceId,
                     pic_id: song.pic_id || song.pic || "",
                 });
                 if (!normalized || !resolveSongId(normalized)) {
                     return null;
                 }
-                normalized.source = source;
+                normalized.source = resultSource;
                 return normalized;
             })
             .filter(Boolean);

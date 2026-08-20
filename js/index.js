@@ -42,6 +42,8 @@ const dom = {
     mobileExportPlaylistBtn: document.getElementById("mobileExportPlaylistBtn"),
     playModeBtn: document.getElementById("playModeBtn"),
     playPauseBtn: document.getElementById("playPauseBtn"),
+    playPrevBtn: document.getElementById("playPrevBtn"),
+    playNextBtn: document.getElementById("playNextBtn"),
     progressBar: document.getElementById("progressBar"),
     currentTimeDisplay: document.getElementById("currentTimeDisplay"),
     durationDisplay: document.getElementById("durationDisplay"),
@@ -709,6 +711,26 @@ function buildAudioProxyUrl(url) {
         console.warn("无法解析音频地址，跳过代理", error);
         return url;
     }
+}
+
+function toAbsoluteUrl(url) {
+    if (!url || typeof url !== "string") return url;
+    try {
+        return new URL(url, window.location.href).toString();
+    } catch (_) {
+        return url;
+    }
+}
+
+function escapeHtml(str) {
+    if (str == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
+function escapeAttr(str) {
+    return escapeHtml(str);
 }
 
 const SOURCE_OPTIONS = [
@@ -4047,6 +4069,19 @@ function setupInteractions() {
     }
 
     dom.playPauseBtn.addEventListener("click", togglePlayPause);
+
+    if (dom.playPrevBtn) {
+        dom.playPrevBtn.addEventListener("click", playPrevious);
+    }
+    if (dom.playNextBtn) {
+        dom.playNextBtn.addEventListener("click", playNext);
+    }
+    if (dom.clearPlaylistBtn) {
+        dom.clearPlaylistBtn.addEventListener("click", clearPlaylist);
+    }
+    if (dom.mobileClearPlaylistBtn) {
+        dom.mobileClearPlaylistBtn.addEventListener("click", clearPlaylist);
+    }
     dom.audioPlayer.addEventListener("timeupdate", handleTimeUpdate);
     dom.audioPlayer.addEventListener("loadedmetadata", handleLoadedMetadata);
     dom.audioPlayer.addEventListener("play", updatePlayPauseButton);
@@ -4363,6 +4398,9 @@ function setupInteractions() {
         }
         if (isMobileView && e.key === "Escape") {
             closeAllMobileOverlays();
+        }
+        if (!isMobileView && e.key === "Escape" && document.body.classList.contains("side-panel-open")) {
+            closeSidePanel(true);
         }
     });
 
@@ -5196,23 +5234,36 @@ function displaySearchResults(newItems, options = {}) {
 function showQualityMenu(event, index, type) {
     event.stopPropagation();
 
-    // 移除现有的质量菜单
     const existingMenu = document.querySelector(".dynamic-quality-menu");
     if (existingMenu) {
         existingMenu.remove();
     }
 
-    // 创建新的质量菜单
     const menu = document.createElement("div");
     menu.className = "dynamic-quality-menu";
-    menu.innerHTML = `
-        <div class="quality-option" onclick="downloadWithQuality(event, ${index}, '${type}', '128')">标准音质 (128k)</div>
-        <div class="quality-option" onclick="downloadWithQuality(event, ${index}, '${type}', '192')">高音质 (192k)</div>
-        <div class="quality-option" onclick="downloadWithQuality(event, ${index}, '${type}', '320')">超高音质 (320k)</div>
-        <div class="quality-option" onclick="downloadWithQuality(event, ${index}, '${type}', '999')">无损音质</div>
-    `;
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", "选择音质");
 
-    // 设置菜单位置
+    const qualities = [
+        { bitrate: "128", label: "标准音质 (128k)" },
+        { bitrate: "192", label: "高音质 (192k)" },
+        { bitrate: "320", label: "超高音质 (320k)" },
+        { bitrate: "999", label: "无损音质" },
+    ];
+
+    qualities.forEach(({ bitrate, label }) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "quality-option";
+        option.setAttribute("role", "menuitem");
+        option.setAttribute("aria-label", label);
+        option.textContent = label;
+        option.addEventListener("click", () => {
+            downloadWithQuality(event, index, type, bitrate);
+        });
+        menu.appendChild(option);
+    });
+
     const button = event.target.closest("button");
     const rect = button.getBoundingClientRect();
     menu.style.position = "fixed";
@@ -5220,17 +5271,25 @@ function showQualityMenu(event, index, type) {
     menu.style.left = (rect.left - 50) + "px";
     menu.style.zIndex = "10000";
 
-    // 添加到body
     document.body.appendChild(menu);
 
-    // 点击其他地方关闭菜单
     setTimeout(() => {
-        document.addEventListener("click", function closeMenu(e) {
+        const closeMenu = (e) => {
             if (!menu.contains(e.target)) {
                 menu.remove();
                 document.removeEventListener("click", closeMenu);
             }
-        });
+        };
+        document.addEventListener("click", closeMenu);
+
+        const handleKey = (e) => {
+            if (e.key === "Escape") {
+                menu.remove();
+                document.removeEventListener("keydown", handleKey);
+                document.removeEventListener("click", closeMenu);
+            }
+        };
+        document.addEventListener("keydown", handleKey);
     }, 0);
 }
 
@@ -5699,17 +5758,19 @@ function renderPlaylist() {
 
     dom.playlist.classList.remove("empty");
     const playlistHtml = state.playlistSongs.map((song, index) => {
-        const artistValue = Array.isArray(song.artist)
+        const artistValue = escapeHtml(Array.isArray(song.artist)
             ? song.artist.join(", ")
-            : (song.artist || "未知艺术家");
-        const songKey = getSongKey(song) || `playlist-${index}`;
+            : (song.artist || "未知艺术家"));
+        const songName = escapeHtml(song.name || "未知歌曲");
+        const songKey = escapeAttr(getSongKey(song) || `playlist-${index}`);
         const isSelected = state.selectedPlaylistSongs.has(index);
+        const isSelectedLabel = isSelected ? "取消选择" : "选择歌曲";
         return `
-        <div class="playlist-item${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
-            <button class="playlist-item-select" type="button" data-playlist-select="true" data-index="${index}" aria-label="${isSelected ? "取消选择" : "选择歌曲"}" aria-pressed="${isSelected}">
+        <div class="playlist-item${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${songName}" data-favorite-key="${songKey}">
+            <button class="playlist-item-select" type="button" data-playlist-select="true" data-index="${index}" aria-label="${isSelectedLabel}" aria-pressed="${isSelected}">
                 <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <span class="playlist-item-info"><span class="playlist-item-name">${song.name || "未知歌曲"}</span><span class="playlist-item-artist">${artistValue}</span></span>
+            <span class="playlist-item-info"><span class="playlist-item-name">${songName}</span><span class="playlist-item-artist">${artistValue}</span></span>
             <button class="playlist-item-favorite favorite-toggle" type="button" data-playlist-action="favorite" data-index="${index}" aria-label="加入收藏" title="加入收藏">
                 <i class="far fa-heart"></i>
             </button>
@@ -5734,8 +5795,9 @@ function renderFanPlaylist() {
         return;
     }
     const html = state.playlistSongs.map((song, index) => {
-        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
-        const songKey = getSongKey(song) || `playlist-${index}`;
+        const artistValue = escapeHtml(Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家"));
+        const songName = escapeHtml(song.name || "未知歌曲");
+        const songKey = escapeAttr(getSongKey(song) || `playlist-${index}`);
         const isCurrent = state.currentPlaylist === "playlist" && index === state.currentTrackIndex;
         const isSelected = state.selectedPlaylistSongs.has(index);
         return `
@@ -5744,12 +5806,12 @@ function renderFanPlaylist() {
              role="button"
              tabindex="0"
              data-fan-list="playlist"
-             aria-label="播放 ${song.name}"
+             aria-label="播放 ${songName}"
              data-favorite-key="${songKey}">
             <button class="fan-item__select" type="button" data-fan-select="true" data-index="${index}" aria-label="选择歌曲" aria-pressed="${isSelected}">
                 <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <span class="fan-item__info"><span class="fan-item__title">${song.name || "未知歌曲"}</span><span class="fan-item__artist">${artistValue}</span></span>
+            <span class="fan-item__info"><span class="fan-item__title">${songName}</span><span class="fan-item__artist">${artistValue}</span></span>
             <button class="fan-item__fav favorite-toggle" type="button"
                     data-favorite-key="${songKey}"
                     data-fan-action="toggle-favorite"
@@ -5789,8 +5851,9 @@ function renderFanFavorites() {
         return;
     }
     const html = favorites.map((song, index) => {
-        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
-        const songKey = getSongKey(song) || `favorite-${index}`;
+        const artistValue = escapeHtml(Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家"));
+        const songName = escapeHtml(song.name || "未知歌曲");
+        const songKey = escapeAttr(getSongKey(song) || `favorite-${index}`);
         const isCurrent = state.currentList === "favorite" && index === state.currentFavoriteIndex;
         const isSelected = state.selectedFavoriteSongs.has(index);
         return `
@@ -5799,12 +5862,12 @@ function renderFanFavorites() {
              role="button"
              tabindex="0"
              data-fan-list="favorite"
-             aria-label="播放 ${song.name}"
+             aria-label="播放 ${songName}"
              data-favorite-key="${songKey}">
             <button class="fan-item__select" type="button" data-fan-select="true" data-index="${index}" aria-label="选择歌曲" aria-pressed="${isSelected}">
                 <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <span class="fan-item__info"><span class="fan-item__title">${song.name || "未知歌曲"}</span><span class="fan-item__artist">${artistValue}</span></span>
+            <span class="fan-item__info"><span class="fan-item__title">${songName}</span><span class="fan-item__artist">${artistValue}</span></span>
             <button class="fan-item__fav favorite-toggle" type="button"
                     data-fan-action="toggle-favorite"
                     data-index="${index}"
@@ -6087,16 +6150,18 @@ function renderFavorites() {
 
     dom.favorites.classList.remove("empty");
     const favoritesHtml = favorites.map((song, index) => {
-        const artistValue = Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家");
+        const artistValue = escapeHtml(Array.isArray(song.artist) ? song.artist.join(", ") : (song.artist || "未知艺术家"));
+        const songName = escapeHtml(song.name || "未知歌曲");
         const isCurrent = state.currentList === "favorite" && index === state.currentFavoriteIndex;
         const isSelected = state.selectedFavoriteSongs.has(index);
-        const songKey = getSongKey(song) || `favorite-${index}`;
+        const songKey = escapeAttr(getSongKey(song) || `favorite-${index}`);
+        const isSelectedLabel = isSelected ? "取消选择" : "选择歌曲";
         return `
-        <div class="playlist-item${isCurrent ? " current" : ""}${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${song.name}" data-favorite-key="${songKey}">
-            <button class="playlist-item-select" type="button" data-favorite-select="true" data-index="${index}" aria-label="${isSelected ? "取消选择" : "选择歌曲"}" aria-pressed="${isSelected}">
+        <div class="playlist-item${isCurrent ? " current" : ""}${isSelected ? " selected" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${songName}" data-favorite-key="${songKey}">
+            <button class="playlist-item-select" type="button" data-favorite-select="true" data-index="${index}" aria-label="${isSelectedLabel}" aria-pressed="${isSelected}">
                 <i class="fas fa-check" aria-hidden="true"></i>
             </button>
-            <span class="playlist-item-info"><span class="playlist-item-name">${song.name || "未知歌曲"}</span><span class="playlist-item-artist">${artistValue}</span></span>
+            <span class="playlist-item-info"><span class="playlist-item-name">${songName}</span><span class="playlist-item-artist">${artistValue}</span></span>
             <button class="playlist-item-favorite favorite-toggle" type="button" data-favorite-action="remove" data-index="${index}" aria-label="取消收藏" title="取消收藏">
                 <i class="fas fa-heart"></i>
             </button>
@@ -7470,6 +7535,12 @@ function initSettings() {
         dom.settingsModal.addEventListener("click", (e) => {
             if (e.target === dom.settingsModal) closeSettingsModal();
         });
+        dom.settingsModal.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                closeSettingsModal();
+            }
+        });
     }
 
     // 加载设置
@@ -7487,10 +7558,19 @@ function renderGenreList() {
     `).join("");
 }
 
+let lastFocusedElement = null;
+
 function openSettingsModal() {
     if (dom.settingsModal) {
+        lastFocusedElement = document.activeElement;
         dom.settingsModal.classList.add("show");
         dom.settingsModal.setAttribute("aria-hidden", "false");
+        const firstFocusable = dom.settingsModal.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (firstFocusable) {
+            setTimeout(() => firstFocusable.focus(), 0);
+        }
     }
 }
 
@@ -7498,6 +7578,9 @@ function closeSettingsModal() {
     if (dom.settingsModal) {
         dom.settingsModal.classList.remove("show");
         dom.settingsModal.setAttribute("aria-hidden", "true");
+        if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+            lastFocusedElement.focus();
+        }
     }
 }
 

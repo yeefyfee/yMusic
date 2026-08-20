@@ -104,6 +104,8 @@
 
 </head>
 <body>
+    <a href="#lyricsStage" class="skip-link">跳转到歌词区域</a>
+
     <!-- 银河粒子背景 -->
     <div class="galaxy-bg" aria-hidden="true"></div>
 
@@ -245,7 +247,7 @@
                     <button class="side-action-btn" id="exportPlaylistBtn" type="button" title="导出播放列表" aria-label="导出播放列表">
                         <i class="fas fa-file-export" aria-hidden="true"></i>
                     </button>
-                    <button class="side-action-btn side-action-btn--clear" id="clearPlaylistBtn" type="button" onclick="clearPlaylist()" title="清空播放列表" aria-label="清空播放列表">
+                    <button class="side-action-btn side-action-btn--clear" id="clearPlaylistBtn" type="button" title="清空播放列表" aria-label="清空播放列表">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -353,13 +355,13 @@
         <!-- 中：播放控制 + 进度 -->
         <div class="player-bar__center">
             <div class="player-bar__transport">
-                <button class="transport-btn transport-btn--prev" onclick="playPrevious()" type="button" title="上一曲" aria-label="上一曲">
+                <button class="transport-btn transport-btn--prev" id="playPrevBtn" type="button" title="上一曲" aria-label="上一曲">
                     <i class="fas fa-backward-step" aria-hidden="true"></i>
                 </button>
                 <button class="transport-btn transport-btn--play" id="playPauseBtn" type="button" title="播放 / 暂停" aria-label="播放或暂停">
                     <i class="fas fa-play" aria-hidden="true"></i>
                 </button>
-                <button class="transport-btn transport-btn--next" onclick="playNext()" type="button" title="下一曲" aria-label="下一曲">
+                <button class="transport-btn transport-btn--next" id="playNextBtn" type="button" title="下一曲" aria-label="下一曲">
                     <i class="fas fa-forward-step" aria-hidden="true"></i>
                 </button>
             </div>
@@ -458,7 +460,7 @@
                     <button id="mobileExportPlaylistBtn" class="mobile-panel-action-btn" type="button" aria-label="导出播放列表" title="导出播放列表" aria-disabled="true" disabled>
                         <i class="fas fa-file-export" aria-hidden="true"></i>
                     </button>
-                    <button id="mobileClearPlaylistBtn" class="mobile-panel-action-btn mobile-panel-clear-btn" type="button" aria-label="清空播放列表" title="清空播放列表" onclick="clearPlaylist()" hidden>
+                    <button id="mobileClearPlaylistBtn" class="mobile-panel-action-btn mobile-panel-clear-btn" type="button" aria-label="清空播放列表" title="清空播放列表" hidden>
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -524,7 +526,6 @@
     <!-- 调试信息容器 -->
     <div id="debugInfo" class="debug-info"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/index.js"></script>
     <script>
         if (window.__SOLARA_IS_MOBILE) {

@@ -325,7 +325,7 @@ function closeAllMobileOverlays() {
         forceCloseMobilePanelOverlay();
     });
     return result;
-        const label = count > 0 ? `添加 ${count} 首歌曲到播放列表` : "添加已选歌曲到播放列表";
+}
 
 function updateMobileInlineLyricsAria(isOpen) {
     if (!dom.mobileInlineLyrics) {

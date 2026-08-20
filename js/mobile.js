@@ -33,9 +33,6 @@
         }
         document.body.classList.add("mobile-search-open");
         document.body.classList.remove("mobile-panel-open");
-        if (dom.mobileSearchMask) {
-            dom.mobileSearchMask.removeAttribute("hidden");
-        }
         if (dom.searchArea) {
             dom.searchArea.setAttribute("aria-hidden", "false");
         }
@@ -56,9 +53,6 @@
             return;
         }
         document.body.classList.remove("mobile-search-open");
-        if (dom.mobileSearchMask) {
-            dom.mobileSearchMask.setAttribute("hidden", "");
-        }
         const toggleSearchMode = window.toggleSearchMode;
         if (typeof toggleSearchMode === "function") {
             toggleSearchMode(false);
@@ -167,6 +161,9 @@
 
             const target = event.target;
             if (dom.mobilePanel && (dom.mobilePanel === target || dom.mobilePanel.contains(target))) {
+                return;
+            }
+            if (dom.mobileSearchMask && (dom.mobileSearchMask === target || dom.mobileSearchMask.contains(target))) {
                 return;
             }
             if (dom.searchArea && (dom.searchArea === target || dom.searchArea.contains(target))) {

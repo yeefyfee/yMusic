@@ -135,6 +135,7 @@ const dom = {
     mobileFavoriteToggle: document.getElementById("mobileFavoriteToggle"),
     // 移动端 - 搜索遮罩
     mobileSearchMask: document.getElementById("mobileSearchMask"),
+    mobileSearchSubmit: document.getElementById("mobileSearchSubmit"),
     mobileSearchResultsList: document.getElementById("mobileSearchResultsList"),
     mobileLoadMoreBtn: document.getElementById("mobileLoadMoreBtn"),
     mobileImportSelectedBtn: document.getElementById("mobileImportSelectedBtn"),
@@ -3869,6 +3870,13 @@ function setupInteractions() {
                 e.preventDefault();
                 e.stopPropagation();
                 openMobileSearch();
+            });
+        }
+        if (dom.mobileSearchSubmit) {
+            dom.mobileSearchSubmit.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                performSearch(false, dom.searchInput);
             });
         }
         if (dom.mobileSearchClose) {

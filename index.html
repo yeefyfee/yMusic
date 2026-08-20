@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=13">
+    <link rel="stylesheet" href="css/style.css?v=14">
     <script src="js/i18n.js"></script>
     <script>
         (function () {
@@ -31,7 +31,7 @@
                 document.documentElement.classList.add("desktop-view");
                 const desktopLink = document.createElement("link");
                 desktopLink.rel = "stylesheet";
-                desktopLink.href = "css/desktop.css";
+                desktopLink.href = "css/desktop.css?v=2";
                 desktopLink.id = "desktopStylesheet";
                 document.head.appendChild(desktopLink);
                 return;
@@ -39,7 +39,7 @@
             document.documentElement.classList.add("mobile-view");
             const link = document.createElement("link");
             link.rel = "stylesheet";
-            link.href = "css/mobile.css";
+            link.href = "css/mobile.css?v=2";
             link.id = "mobileStylesheet";
             document.head.appendChild(link);
             const setViewportUnit = () => {
@@ -316,11 +316,11 @@
                 </button>
             </div>
             <div class="mobile-stage__artist" id="mobileSongArtist">未知艺术家</div>
-            <button class="mobile-quality-chip" id="mobileQualityToggle" type="button" aria-haspopup="menu" aria-expanded="false">
-                <span id="mobileQualityLabel">极高音质</span>
-                <i class="fas fa-chevron-down" aria-hidden="true"></i>
-            </button>
         </div>
+        <button class="mobile-quality-chip" id="mobileQualityToggle" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span id="mobileQualityLabel">极高音质</span>
+            <i class="fas fa-chevron-up" aria-hidden="true"></i>
+        </button>
     </div>
 
     <!-- 底部播放器控制栏（参考网易云风格） -->
@@ -392,7 +392,7 @@
 
     <!-- 移动端：搜索遮罩 -->
     <div class="mobile-overlay-scrim" id="mobileOverlayScrim"></div>
-    <div class="mobile-search-mask" id="mobileSearchMask" hidden>
+    <div class="mobile-search-mask" id="mobileSearchMask">
         <div class="mobile-search-panel">
             <div class="mobile-search-header">
                 <h2 class="mobile-search-title">探索音乐</h2>
@@ -404,6 +404,7 @@
                 <div class="mobile-search-bar">
                     <i class="fas fa-search mobile-search-icon" aria-hidden="true"></i>
                     <input type="text" id="searchInput" class="mobile-search-input" placeholder="搜索歌曲、歌手或专辑…" autocomplete="off" aria-label="搜索输入框">
+                    <button id="mobileSearchSubmit" class="mobile-search-submit" type="button" aria-label="执行搜索">搜索</button>
                 </div>
                 <div class="mobile-search-source">
                     <button id="mobileSourceSelectBtn" class="source-select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">

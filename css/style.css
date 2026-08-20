@@ -274,7 +274,7 @@ body.background-transitioning .background-stage__layer--transition {
     position: fixed;
     top: 24px;
     left: 28px;
-    z-index: 9999;
+    z-index: 2147483000;
     width: 220px;
     overflow: visible;
     transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
